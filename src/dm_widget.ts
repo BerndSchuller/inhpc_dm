@@ -49,8 +49,6 @@ import {
 import { dm_DirListing } from './mod_listing';
 import { dm_FileBrowser } from './mod_browser';
 
-//import {exec} from 'child_process';
-
 // example class generating widgets used for showing colourful test widgets (based on css classes)
 // https://github.com/jupyterlab/lumino/issues/43
 // https://github.com/jupyterlab/lumino/blob/master/examples/example-dockpanel/src/index.ts
@@ -101,14 +99,12 @@ export class dmWidget extends Widget {
     // single panel with action toolbar buttons for debug
     this._actionToolbar = new Toolbar<Widget>();
     this._actionToolbar.id = "actionToolbar";
-    //const {exec} = require ("child_process");
     const mount_ssh = new ToolbarButton({
     //  icon: newFolderIcon,
 	  label: "mount_ssh",
       onClick: () => {
 		this._infoWidget.textareaNode.value='Action: mount ssh fs from Hawk\n sshfs hpcbuch@hawk.hww.hlrs.de:/zhome/academic/HLRS/hlrs/hpcbuch ./mounts/hawk_home"';
-//		exec("ls -la");
-//		exec("touch test.touch");
+	//exec("touch test.touch");
       },
       tooltip: 'Mount ssh fs on Hawk '
     });

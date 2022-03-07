@@ -2,12 +2,16 @@
 yarn.lock
 lib/
 node_modules/
-inhpc_dm/
+
 inhpc_dm.egg-info/
 .ipynb_checkpoints/
 *.tsbuildinfo
 build/
 dist/
+inhpc_dm/labextension/
+
+.project
+.pydevproject
 
 # OSX files
 .DS_Store
