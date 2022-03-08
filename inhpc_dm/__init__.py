@@ -25,10 +25,10 @@ def _load_jupyter_server_extension(server_app):
     server_app: jupyterlab.labapp.LabApp
         JupyterLab application instance
     """
-    url_path = "inhpc-dm"
+    url_path = "inhpc_dm"
     setup_handlers(server_app.web_app, url_path)
     server_app.log.info(
-        f"Registered jlab_ext_example extension at URL path /{url_path}"
+        f"Registered inhpc_dm extension at URL path /{url_path}"
     )
 
 # For backward compatibility with the classical notebook

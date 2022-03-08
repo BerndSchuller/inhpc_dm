@@ -49,6 +49,9 @@ import {
 import { dm_DirListing } from './mod_listing';
 import { dm_FileBrowser } from './mod_browser';
 
+import { requestAPI } from './dm_handler';
+
+
 // example class generating widgets used for showing colourful test widgets (based on css classes)
 // https://github.com/jupyterlab/lumino/issues/43
 // https://github.com/jupyterlab/lumino/blob/master/examples/example-dockpanel/src/index.ts
@@ -93,59 +96,43 @@ export class dmWidget extends Widget {
   */
   constructor(app: JupyterFrontEnd) {
     super();
-    this._settings["uftp_url"] = this._settings["uftp_host"] + ":" + this._settings["uftp_port"] + this._settings["uftp_dir"];
     this.addClass('my-dmWidget');
 
-    // single panel with action toolbar buttons for debug
+    // single panel with action toolbar buttons
     this._actionToolbar = new Toolbar<Widget>();
     this._actionToolbar.id = "actionToolbar";
-    const mount_ssh = new ToolbarButton({
+    const tb_uftp_info = new ToolbarButton({
     //  icon: newFolderIcon,
-	  label: "mount_ssh",
-      onClick: () => {
-		this._infoWidget.textareaNode.value='Action: mount ssh fs from Hawk\n sshfs hpcbuch@hawk.hww.hlrs.de:/zhome/academic/HLRS/hlrs/hpcbuch ./mounts/hawk_home"';
-	//exec("touch test.touch");
-      },
-      tooltip: 'Mount ssh fs on Hawk '
+	  label: "run 'uftp info'",
+      onClick: async () => {
+         // GET request
+    	try {
+      		const data = await requestAPI<any>('info');
+      		console.log(data);
+      		this._infoWidget.textareaNode.value = JSON.stringify(data);
+    	} catch (reason) {
+      		console.error(`Error on GET /inhpc_dm/info".\n${reason}`);
+    	}
+	  },
+      tooltip: "Run 'uftp info'"
     });
-	const mount_uftp = new ToolbarButton({
+	const tb_mount_uftp = new ToolbarButton({
     //  icon: newFolderIcon,
 	  label: "mount_uftp",
       onClick: () => {
-		this._infoWidget.textareaNode.value='Action: mount uftp fs from HLRS\n ./fuse-mount.sh';
-		//app.commands.execute("filebrowser:go-up");
-//		exec("ls -la");
-//		exec("touch test.touch");
+		this._infoWidget.textareaNode.value='Action: mount uftp fs';
       },
-      tooltip: 'Mount ssh fs on Hawk '
+      tooltip: 'Mount uftp fs'
     });
-	const scp = new ToolbarButton({
-	  label: "scp TEST",
-      onClick: () => {
-		app.commands.execute('docmanager:open', {
-			path: 'untitled.txt',
-			options: {
-				mode: 'split-right'
-			}
-		});
-		this._infoWidget.textareaNode.value='Action: scp TEST';
-      }, 
-	  tooltip: 'Execute Test scp command '
-    });
-
-	this._actionToolbar.addItem('mount_ssh', mount_ssh);
-	this._actionToolbar.addItem('mount_uftp', mount_uftp);
-	this._actionToolbar.addItem('scp', scp);
+	this._actionToolbar.addItem('uftp_info', tb_uftp_info);
+	this._actionToolbar.addItem('mount_uftp', tb_mount_uftp);
 
 	// single panel with settings widget
 	this._settingsWidget = new ContentWidget('Settings');
 	this._settingsWidget.id = "settingsWidget";
-	//this._settingsWidget.textareaNode.value="Settings in future";
-	//this._settingsWidget.textareaNode.value = "Settings\n" + JSON.stringify(this._settings);
-	this._settingsWidget.textareaNode.value = "Settings\n" + "uftp_url: " + this._settings["uftp_url"] + "\n" + "uftp_options: " + this._settings["uftp_options"];
+	this._settingsWidget.textareaNode.value = "Settings\n" + JSON.stringify(this._settings);
 	this._settingsWidget.textareaNode.style.width = "95%";
 	this._settingsWidget.textareaNode.style.height = "80px";
-	//console.log(JSON.stringify(this._settings));
 	
 	// single panel with info widget, will later be extended and moved below file browsers
     	this._infoWidget = new ContentWidget('Info');
@@ -261,7 +248,6 @@ export class dmWidget extends Widget {
 		var logtext = '';
         each(this._fbWidget_l.listing.selectedItems(), item => {
 		  text=text  + "\n" + item.path;
-		  // /opt/unicore/uftp-client-1.3.2/bin/uftp cp -v -B-10G -u hpcbuch /dev/zero https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS:/lustre/hpe/ws10/ws10.3/ws/hpcbuch-test/10g-w2.img -i /home/hpcbuch/.ssh/2020_hpcbuch_inhpc_id_ed25519_nopw.key  -t 1
 		  console.log("R_PATH: ",this._fbWidget_r.model.path);
 		  if (this._fbWidget_r.model.path) {
 			console.log("Path empty");
@@ -310,10 +296,7 @@ export class dmWidget extends Widget {
 	
 	// transfer boxpanel itself
 	this._transferBoxPanel = new BoxPanel({
-      direction: 'top-to-bottom', // BoxPanel
-	//  orientation: 'horizontal', // SplitPanel
-    //  renderer: SplitPanel.defaultRenderer,
-    //  spacing: 1
+      direction: 'top-to-bottom'
     });
 	this._transferBoxPanel.id = "transferToolbar";
 	this._transferBoxPanel.node.style.maxWidth="100px";
@@ -337,15 +320,11 @@ export class dmWidget extends Widget {
     this._fbInfo_r = new ContentWidget('Info');
 	this._fbInfo_r.id = "fbInfo_r";
 	this._fbInfo_r.textareaNode.value="Info right FileBrowser";
-    //this._fbInfo_r.textareaNode.cols=50;
-	//this._fbInfo_r.textareaNode.rows=4;
-	this._fbInfo_r.textareaNode.style.width="95%";
+   this._fbInfo_r.textareaNode.style.width="95%";
 	this._fbInfo_r.textareaNode.style.height="95%";
 	// filebrowser + info box in new panel
 	this._fbPanel_r = new SplitPanel({
-    //  direction: 'top-to-bottom', // BoxPanel
-	  orientation: 'vertical', // SplitPanel
-    //  renderer: SplitPanel.defaultRenderer,
+	  orientation: 'vertical',
       spacing: 1
     });
 	this._fbPanel_r.id = 'fb_panel_r';
@@ -355,13 +334,10 @@ export class dmWidget extends Widget {
 	
     // horizontal panel including browser panels and transfer button
 	this._fbPanel = new BoxPanel({
-      direction: 'left-to-right', // BoxPanel
-	//  orientation: 'horizontal',
-    //  renderer: SplitPanel.defaultRenderer,
+      direction: 'left-to-right',
       spacing: 1
     });
 	this._fbPanel.id = 'fb_panel';
-	// add fb_widgets to fb_panel
 	this._fbPanel.addClass('dm_Widget-main');
 	this._fbPanel.addWidget(this._fbPanel_l);
 	this._fbPanel.addWidget(this._transferBoxPanel);
@@ -374,18 +350,16 @@ export class dmWidget extends Widget {
 	this._logWidget = new ContentWidget('Log');
 	this._logWidget.id = "logWidget";
 	this._logWidget.textareaNode.value="Log output";
-	//this._logWidget.textareaNode.cols=120;
-	//this._logWidget.textareaNode.rows=5;
 	this._logWidget.textareaNode.style.width="95%";
 	this._logWidget.textareaNode.style.height="95%";
 
 	// ==================== starting main panel collection
 
-        this._mainLayout = (this.layout = new BoxLayout());
+    this._mainLayout = (this.layout = new BoxLayout());
 	
 	// main split panel hosting all horizontal panels
 	this._panel_collection = new SplitPanel({
-	      orientation: 'vertical', // for SplitPanel
+	      orientation: 'vertical'
 	});
 	this._panel_collection.id = 'panel_collection';
 	this._panel_collection.addWidget(this._top_panel);
@@ -418,7 +392,6 @@ export class dmWidget extends Widget {
   * Sender class and event type are usable information
   */
   eventSignalHandler(sender: dm_DirListing, eventType:string): void {
-    //console.log(sender.constructor.name, eventType);
     if (sender.constructor.name === 'dm_DirListing') {
 	  if (eventType === 'click') {
 		var text = "Selected Files Info";
@@ -468,11 +441,6 @@ export class dmWidget extends Widget {
 	"uftp_options": "-u hpcbuch -i /home/hpcbuch/.ssh/2020_hpcbuch_inhpc_id_ed25519_nopw.key",
 	"uftp_dir": "/tmp/",
 	"uftp_url": "",
-	"ssh_host": "hawk.hww.hlrs.de",
-	"ssh_port": "22",
-	"ssh_user": "hpcbuch",
-	"ssh_password": "testtest",
-	"ssh_dir": "./"
   };
   
   /**

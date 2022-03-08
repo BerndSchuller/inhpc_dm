@@ -2,10 +2,7 @@
  * files structure:
  * index.ts         Main file with all imports, adding extensions to JupyterLab, ...
  * dm_*.ts          dm = data management files
- *   dm_widget.ts   main data management widget
- * mod_*.ts         mod = modified files for existing JupyterLab classes, rest of name is untouched.
- *   mod_browser.ts Modified FileBrowser class
- *   mod_listing.ts modified DirListing class for FileBrowser
+ * mod_*.ts         mod = modified files for existing JupyterLab classes
  */
 
 import {
