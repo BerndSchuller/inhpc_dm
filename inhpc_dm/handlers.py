@@ -5,8 +5,6 @@ from notebook.base.handlers import APIHandler
 from notebook.utils import url_path_join
 
 import tornado
-from tornado.web import StaticFileHandler
-
 
 class RouteHandler(APIHandler):
     # The following decorator should be present on all verb methods (head, get, post,
@@ -32,12 +30,3 @@ def setup_handlers(web_app, url_path):
     route_pattern = url_path_join(base_url, url_path, "info")
     handlers = [(route_pattern, RouteHandler)]
     web_app.add_handlers(host_pattern, handlers)
-
-    # Prepend the base_url so that it works in a JupyterHub setting
-    doc_url = url_path_join(base_url, url_path, "public")
-    doc_dir = os.getenv(
-        "INHPC_DM_STATIC_DIR",
-        os.path.join(os.path.dirname(__file__), "public"),
-    )
-    handlers = [("{}/(.*)".format(doc_url), StaticFileHandler, {"path": doc_dir})]
-    web_app.add_handlers(".*$", handlers)

@@ -23,17 +23,17 @@ import {
   DocumentRegistry
 } from '@jupyterlab/docregistry';
 
-import {
-  dm_FilterFileBrowserModel
-} from './mod_model';
-
 import { 
   ServiceManager
 } from '@jupyterlab/services';
 
 import { 
+  newFolderIcon
+} from '@jupyterlab/ui-components';
+
+import { 
   each
-} from '@lumino/algorithm'; // jlpm add @lumino/algorithm
+} from '@lumino/algorithm';
 
 import {
   Message
@@ -46,10 +46,13 @@ import {
   Widget
 } from '@lumino/widgets';
 
+import { dm_FilterFileBrowserModel } from './mod_model';
 import { dm_DirListing } from './mod_listing';
 import { dm_FileBrowser } from './mod_browser';
 
 import { requestAPI } from './dm_handler';
+
+import { getMountInfo } from './dm_dialogs';
 
 
 // example class generating widgets used for showing colourful test widgets (based on css classes)
@@ -102,8 +105,7 @@ export class dmWidget extends Widget {
     this._actionToolbar = new Toolbar<Widget>();
     this._actionToolbar.id = "actionToolbar";
     const tb_uftp_info = new ToolbarButton({
-    //  icon: newFolderIcon,
-	  label: "run 'uftp info'",
+     label: "run 'uftp info'",
       onClick: async () => {
          // GET request
     	try {
@@ -117,11 +119,14 @@ export class dmWidget extends Widget {
       tooltip: "Run 'uftp info'"
     });
 	const tb_mount_uftp = new ToolbarButton({
-    //  icon: newFolderIcon,
-	  label: "mount_uftp",
+      icon: newFolderIcon,
+	  label: "Mount UFTP",
       onClick: () => {
-		this._infoWidget.textareaNode.value='Action: mount uftp fs';
-      },
+      getMountInfo(this._settings["uftp_endpoints"]).then(value => {
+        console.log('mount params: ' + JSON.stringify(value.value));
+  		this._infoWidget.textareaNode.value=JSON.stringify(value.value);
+		});
+	  },
       tooltip: 'Mount uftp fs'
     });
 	this._actionToolbar.addItem('uftp_info', tb_uftp_info);
@@ -251,12 +256,9 @@ export class dmWidget extends Widget {
 		  console.log("R_PATH: ",this._fbWidget_r.model.path);
 		  if (this._fbWidget_r.model.path) {
 			console.log("Path empty");
-		    logentry = this._settings["uftp_bin"] + " cp " + "./" + item.path + " " + this._settings["uftp_url"] + this._fbWidget_r.model.path + "/ " + this._settings["uftp_options"] 
 		  }
 		  else {
-		    logentry = this._settings["uftp_bin"] + " cp " + "./" + item.path + " " + this._settings["uftp_url"] + " " + this._settings["uftp_options"] 
 		  }
-		  //logtext = logtext + " https:/\/" + this._settings["uftp_host"] + ":" + this._settings["uftp_port"] + this._settings["uftp_dir"];
 		  logtext = logtext + logentry + "\n" ;
 		  this._logWidget.textareaNode.value = logtext;
         });
@@ -280,10 +282,10 @@ export class dmWidget extends Widget {
 		  text=text  + "\n" + item.path;
 		  console.log("L_PATH: ",this._fbWidget_l.model.path);
 		  if (this._fbWidget_l.model.path) {
-		    logentry = this._settings["uftp_bin"] + " cp " + this._settings["uftp_url"] + item.path + " ./" + this._fbWidget_l.model.path + "/ " + this._settings["uftp_options"];
+		    //
 		  }	
 		  else {
-		    logentry = this._settings["uftp_bin"] + " cp " + this._settings["uftp_url"] + item.path + " ./ " + this._settings["uftp_options"];
+		    //logentry = this._settings["uftp_bin"] + " cp " + this._settings["uftp_url"] + item.path + " ./ " + this._settings["uftp_options"];
 		  }
 		  logtext = logtext + logentry + "\n" ;
 		  this._logWidget.textareaNode.value = logtext;
@@ -433,14 +435,11 @@ export class dmWidget extends Widget {
   private _mainLayout: BoxLayout;
   private _panel_collection: SplitPanel;
   private _settings = {
-	"uftp_bin": "uftp",
-	"uftp_host": "https://gridftp-fr1.hww.hlrs.de",
-	"uftp_port": "9000",
-	"uftp_user": "hpcbuch",
-	"uftp_password": "testtest",
-	"uftp_options": "-u hpcbuch -i /home/hpcbuch/.ssh/2020_hpcbuch_inhpc_id_ed25519_nopw.key",
-	"uftp_dir": "/tmp/",
-	"uftp_url": "",
+	"uftp_endpoints": [
+		"https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
+		"https://uftp.fz-juelich.de:9112/UFTP_Auth/rest/auth/JUDAC",
+		"https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
+	]
   };
   
   /**
