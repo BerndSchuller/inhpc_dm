@@ -49,11 +49,12 @@ import {
 } from './mod_search';
 
 import { 
-//  FilterFileBrowserModel as dm_FilterFileBrowserModel
+  DirListing,
+  FilterFileBrowserModel //as dm_FilterFileBrowserModel
 } from '@jupyterlab/filebrowser';
-import {
-  dm_FilterFileBrowserModel
-} from './mod_model';
+// import {
+//   dm_FilterFileBrowserModel
+// } from './mod_model';
 
 //import { ISignal, Signal } from '@lumino/signaling';
 
@@ -102,10 +103,15 @@ export class dm_FileBrowser extends Widget {
    * @param model - The file browser view model.
    */
   constructor(options: dm_FileBrowser.IOptions, title: string) {
+    //constructor param string is new
     super();
+
+    //these three lines are new
 	//const ffbm = options.model;
 	//console.log("test ffbm: ", ffbm);
     this.title.label = title;
+
+    //old stuff
 	this.addClass(FILE_BROWSER_CLASS);
     this.id = options.id;
 
@@ -115,6 +121,7 @@ export class dm_FileBrowser extends Widget {
     
     model.connectionFailure.connect(this._onConnectionFailure, this);
     this.translator = options.translator || nullTranslator;
+    //why ever this is now down here
 	const translator = this.translator;
     this._manager = model.manager;
     this._trans = this.translator.load('jupyterlab');
@@ -135,6 +142,7 @@ export class dm_FileBrowser extends Widget {
       },
       tooltip: this._trans.__('New Folder')
     });
+    //using dm_Uploader here
     const uploader = new dm_Uploader({ model, translator: this.translator });
 
     const refresher = new ToolbarButton({
@@ -149,18 +157,22 @@ export class dm_FileBrowser extends Widget {
     this.toolbar.addItem('upload', uploader);
     this.toolbar.addItem('refresher', refresher);
 
+    //original: listing without _; this.createDirListing, but inner content is the same
     this._listing = new dm_DirListing({
       model,
       renderer,
       translator: this.translator
     });
 
+    //this has changed slightly
     this._filenameSearcher = dm_FilenameSearcher({
       listing: this._listing,
+      //this is org again
       useFuzzyFilter: this._useFuzzyFilter,
       placeholder: this._trans.__('Filter files by name')
     });
 
+    //only _ infront of var names are new...?
     this._crumbs.addClass(CRUMBS_CLASS);
     this.toolbar.addClass(TOOLBAR_CLASS);
     this._filenameSearcher.addClass(FILTERBOX_CLASS);
@@ -175,12 +187,13 @@ export class dm_FileBrowser extends Widget {
     if (options.restore !== false) {
       void model.restore(this.id);
     }
-  }
+  }//end constructor
 
   /**
    * The model used by the file browser.
    */
-  readonly model: dm_FilterFileBrowserModel;
+  //new name
+  readonly model: FilterFileBrowserModel;
 
   /**
    * The toolbar used by the file browser.
@@ -203,6 +216,9 @@ export class dm_FileBrowser extends Widget {
     this._navigateToCurrentDirectory = value;
   }
 
+  //missing showLastModifiedColumn and
+  // showLastModifiedColumn(boolean)
+
   /**
    * Whether to use fuzzy filtering on file names.
    */
@@ -211,6 +227,7 @@ export class dm_FileBrowser extends Widget {
 
     this._filenameSearcher = dm_FilenameSearcher({
       listing: this._listing,
+      //this listing thing seems to be the main part of the differences...
       useFuzzyFilter: this._useFuzzyFilter,
       placeholder: this._trans.__('Filter files by name'),
       forceRefresh: true
@@ -225,6 +242,9 @@ export class dm_FileBrowser extends Widget {
     this.layout.addWidget(this._crumbs);
     this.layout.addWidget(this._listing);
   }
+
+  //missing show hidden files and with boolean
+
 
   /**
    * Create an iterator over the listing's selected items.
@@ -300,12 +320,16 @@ export class dm_FileBrowser extends Widget {
       })
       .then(async model => {
         await this._listing.selectItemByName(model.name);
+        //here await this.rename() is missing...?
         this._directoryPending = false;
       })
       .catch(err => {
+        //missing error message stuff
+        //void showErrorMessage(this._trans.__('Error'), err);
         this._directoryPending = false;
       });
   }
+  //creating a new file is missing
 
   /**
    * Delete the currently selected item(s).
@@ -366,13 +390,18 @@ export class dm_FileBrowser extends Widget {
     return this._listing.modelForClick(event);
   }
 
+
+
+  //DirListing instance stuff is missing... was changed above as i recall...
+
+
   protected translator: ITranslator;
 
   /**
    * Handle a connection lost signal from the model.
    */
   private _onConnectionFailure(
-    sender: dm_FilterFileBrowserModel,
+    sender: FilterFileBrowserModel,
     args: Error
   ): void {
     if (
@@ -388,6 +417,9 @@ export class dm_FileBrowser extends Widget {
     }
   }
   
+
+  //this stuff is new:
+
   // avoid dual signaling, instead offer DirListing instead to connect
   get listing(): dm_DirListing {
     return this._listing;
@@ -399,6 +431,23 @@ export class dm_FileBrowser extends Widget {
 //  }
 //  // signal to be consumed by other objects
 //  private _clicked = new Signal<this, string>(this);
+
+
+/*org:
+
+  protected listing: DirListing;                  now private
+  protected crumbs: BreadCrumbs;                  now private
+  private _trans: TranslationBundle;
+  private _filenameSearcher: ReactWidget;
+  private _manager: IDocumentManager;
+  private _directoryPending: boolean;
+  private _filePending: boolean;                  missing
+  private _navigateToCurrentDirectory: boolean;
+  private _showLastModifiedColumn: boolean = true; missing
+  private _useFuzzyFilter: boolean = true;
+  private _showHiddenFiles: boolean = false;      missing
+  */
+
   private _trans: TranslationBundle;
   private _crumbs: dm_BreadCrumbs;
   private _listing: dm_DirListing;
@@ -407,7 +456,7 @@ export class dm_FileBrowser extends Widget {
   private _directoryPending: boolean;
   private _navigateToCurrentDirectory: boolean = false;
   private _useFuzzyFilter: boolean = true;
-}
+}//end FileBrowser
 
 /**
  * The namespace for the `FileBrowser` class statics.
@@ -425,14 +474,14 @@ export namespace dm_FileBrowser {
     /**
      * A file browser model instance.
      */
-    model: dm_FilterFileBrowserModel;
+    model: FilterFileBrowserModel;
 
     /**
      * An optional renderer for the directory listing area.
      *
      * The default is a shared instance of `DirListing.Renderer`.
      */
-    renderer?: dm_DirListing.IRenderer;
+    renderer?: DirListing.IRenderer;
 
     /**
      * Whether a file browser automatically restores state when instantiated.
@@ -448,5 +497,20 @@ export namespace dm_FileBrowser {
      * The application language translator.
      */
     translator?: ITranslator;
-  }
+  }//end IOptions
+
+  //missing :
+  
+   /**
+   * An options object for creating a file.
+   */
+  /*
+    export interface IFileOptions {
+      /**
+       * The file extension.
+       */
+      /*
+      ext: string;
+    }
+  */
 }

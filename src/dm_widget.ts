@@ -29,7 +29,8 @@ import {
   Widget
 } from '@lumino/widgets';
 
-import { dm_FilterFileBrowserModel } from './mod_model';
+import { FilterFileBrowserModel } from '@jupyterlab/filebrowser';
+//import { dm_FilterFileBrowserModel } from './mod_model';
 import { dm_DirListing } from './mod_listing';
 import { dm_FileBrowser } from './mod_browser';
 
@@ -164,7 +165,9 @@ export class dmWidget extends Widget {
     });
     // let fbRenderer = new dm_Renderer();
     // left panel filebrowser and info
-    let fbModel_l = new dm_FilterFileBrowserModel({ manager: docManager });
+   // let fbModel_l = new dm_FilterFileBrowserModel({ manager: docManager });
+   let fbModel_l = new FilterFileBrowserModel({ manager: docManager });
+
     this._fbWidget_l = new dm_FileBrowser({
         id: 'filebrowser-left',
         model: fbModel_l},
@@ -304,7 +307,9 @@ export class dmWidget extends Widget {
 
     //---------------------------------------------------------------------------------
     // right panel filebrowser and info
-    let fbModel_r = new dm_FilterFileBrowserModel({ manager: docManager });
+ //   let fbModel_r = new dm_FilterFileBrowserModel({ manager: docManager });
+ let fbModel_r = new FilterFileBrowserModel({ manager: docManager });
+
     this._fbWidget_r = new dm_FileBrowser({
         id: 'filebrowser-right',
         model: fbModel_r}, 
@@ -471,7 +476,8 @@ export class dmWidget extends Widget {
 * Handle signals with logging before integrating them in normal functions
 * used i.e. where a method needs to be passed instead a string i.e. for signals
 */
-function logger_onModelRefreshed(sender: dm_FilterFileBrowserModel): void {
+//function logger_onModelRefreshed(sender: dm_FilterFileBrowserModel): void {
+function logger_onModelRefreshed(sender: FilterFileBrowserModel): void {
 //  console.log('fb_model refreshed');
 }
 
