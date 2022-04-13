@@ -73,7 +73,7 @@ class ContentWidget extends Widget {
       this.textareaNode.focus();
     }
   }
-}
+}//end contentWidget
 
 export class dmWidget extends Widget {
   /**
@@ -152,7 +152,7 @@ export class dmWidget extends Widget {
     this._top_panel.addWidget(this._infoWidget);
     this._top_panel.setRelativeSizes([20, 50, 30 ]);
     
-	
+	//====================== middle part of the filebrowser view ===========================================
 	
     // left ("_l") and right ("_r") file browser panel each including browser and info panels
     // common preparations
@@ -165,8 +165,8 @@ export class dmWidget extends Widget {
     });
     // let fbRenderer = new dm_Renderer();
     // left panel filebrowser and info
-   // let fbModel_l = new dm_FilterFileBrowserModel({ manager: docManager });
-   let fbModel_l = new FilterFileBrowserModel({ manager: docManager });
+    // let fbModel_l = new dm_FilterFileBrowserModel({ manager: docManager });
+    let fbModel_l = new FilterFileBrowserModel({ manager: docManager });
 
     this._fbWidget_l = new dm_FileBrowser({
         id: 'filebrowser-left',
@@ -336,6 +336,7 @@ export class dmWidget extends Widget {
     this._fbPanel_r.addWidget(this._fbInfo_r);
     this._fbPanel_r.setRelativeSizes([85, 15]);
     
+    //----------------------------------------------------------------------------------------
     // horizontal panel including browser panels and transfer button
     this._fbPanel = new BoxPanel({
         direction: 'left-to-right',
@@ -350,6 +351,7 @@ export class dmWidget extends Widget {
     // test to listen on signal "refreshed"
     fbModel_l.refreshed.connect(logger_onModelRefreshed);
 
+    //=======================================================================================
     // lower panel for log output
     this._logWidget = new ContentWidget('Log');
     this._logWidget.id = "logWidget";
@@ -357,7 +359,7 @@ export class dmWidget extends Widget {
     this._logWidget.textareaNode.style.width="95%";
     this._logWidget.textareaNode.style.height="95%";
 
-    // ==================== starting main panel collection
+    // ==================== starting main panel collection =============================
 
     this._mainLayout = (this.layout = new BoxLayout());
     

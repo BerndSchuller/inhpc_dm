@@ -41,4 +41,4 @@ export async function requestAPI<T>(
   }
 
   return data;
-}
+}// end requestAPI

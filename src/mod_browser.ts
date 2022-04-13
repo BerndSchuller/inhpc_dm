@@ -498,19 +498,4 @@ export namespace dm_FileBrowser {
      */
     translator?: ITranslator;
   }//end IOptions
-
-  //missing :
-  
-   /**
-   * An options object for creating a file.
-   */
-  /*
-    export interface IFileOptions {
-      /**
-       * The file extension.
-       */
-      /*
-      ext: string;
-    }
-  */
 }
