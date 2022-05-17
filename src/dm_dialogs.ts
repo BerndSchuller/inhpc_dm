@@ -10,6 +10,9 @@ import {
 
 const INPUT_DIALOG_CLASS = 'jp-Input-Dialog';
 
+/**
+ * A popup dialog for choosing a system to mount via UFTP.
+ */
 class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
 
   constructor(availableEndpoints: string[] = []) {
@@ -17,32 +20,34 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this.addClass(INPUT_DIALOG_CLASS);
 
     // editable list of endpoints
-	this._list = document.createElement('select');
-	let current = '';
+	  this._list = document.createElement('select');
+	  let current = '';
     availableEndpoints.forEach((item, index) => {
       const option = document.createElement('option');
       option.value = item;
       option.textContent = item;
       this._list.appendChild(option);
     });
-	const data = document.createElement('datalist');
+	  const data = document.createElement('datalist');
     data.id = 'input-dialog-items';
     data.appendChild(this._list);
 
-	this._input_endpoint = document.createElement('input');
+    //creating endpoint
+	  this._input_endpoint = document.createElement('input');
     this._input_endpoint.classList.add('jp-mod-styled');
     this._input_endpoint.id = 'jp-dialog-input-id_ep';
     this._input_endpoint.type = 'list';
     this._input_endpoint.value = current;
     this._input_endpoint.setAttribute('list', data.id);
-	this.node.appendChild(data);
+	  this.node.appendChild(data);
     
     const labelElement_ep = document.createElement('label');
     labelElement_ep.textContent = "UFTP endpoint";
     labelElement_ep.htmlFor = this._input_endpoint.id;
     this.node.appendChild(labelElement_ep);
     this.node.appendChild(this._input_endpoint);
-
+    
+    //creating remote directory
     this._input_remoteDir = document.createElement('input');
     this._input_remoteDir.classList.add('jp-mod-styled');
     this._input_remoteDir.id = 'jp-dialog-input-id_rd';
@@ -53,6 +58,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this.node.appendChild(labelElement_rd);
     this.node.appendChild(this._input_remoteDir);
 
+    //creating local directory
     this._input_localDir = document.createElement('input');
     this._input_localDir.classList.add('jp-mod-styled');
     this._input_localDir.id = 'jp-dialog-input-id_ld';
@@ -63,7 +69,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this.node.appendChild(labelElement_ld);
     this.node.appendChild(this._input_localDir);
 
-  }
+  }// end constructor
 
   /** Input HTML nodes */
   protected _input_endpoint: HTMLInputElement;
@@ -79,7 +85,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     		 "mount_point": this._input_localDir.value
     }
   }
-}
+}//end mount dialog class
 
 
 export function showDialog<T>(
