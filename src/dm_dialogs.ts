@@ -75,8 +75,8 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
 
   getValue(): any {
     return { "endpoint": this._input_endpoint.value,
-    		 "remoteDir": this._input_remoteDir.value,
-    		 "localDir": this._input_localDir.value
+    		 "remote_directory": this._input_remoteDir.value,
+    		 "mount_point": this._input_localDir.value
     }
   }
 }

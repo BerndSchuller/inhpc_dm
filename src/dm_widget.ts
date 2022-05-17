@@ -105,15 +105,15 @@ export class dmWidget extends Widget {
     this._actionToolbar = new Toolbar<Widget>();
     this._actionToolbar.id = "actionToolbar";
     const tb_uftp_info = new ToolbarButton({
-     label: "run 'uftp info'",
+      label: "Get info",
       onClick: async () => {
          // GET request
     	try {
-      		const data = await requestAPI<any>('info');
+      		const data = await requestAPI<any>('mounts');
       		console.log(data);
       		this._infoWidget.textareaNode.value = JSON.stringify(data);
     	} catch (reason) {
-      		console.error(`Error on GET /inhpc_dm/info".\n${reason}`);
+      		console.error(`Error on GET /inhpc_dm/mounts".\n${reason}`);
     	}
 	  },
       tooltip: "Run 'uftp info'"
@@ -121,11 +121,20 @@ export class dmWidget extends Widget {
 	const tb_mount_uftp = new ToolbarButton({
       icon: newFolderIcon,
 	  label: "Mount UFTP",
-      onClick: () => {
-      getMountInfo(this._settings["uftp_endpoints"]).then(value => {
-        console.log('mount params: ' + JSON.stringify(value.value));
-  		this._infoWidget.textareaNode.value=JSON.stringify(value.value);
-		});
+      onClick: async () => {
+        getMountInfo(this._settings["uftp_endpoints"]).then(value => {
+          console.log('mount params: ' + JSON.stringify(value.value));
+          // POST request
+          try {
+      		const data = requestAPI<any>('mounts', {
+      		    'body': JSON.stringify(value.value),
+      		    'method': 'POST'});
+      		console.log(data);
+      		this._infoWidget.textareaNode.value = JSON.stringify(data);
+    	  } catch (reason) {
+      		console.error(`Error on GET /inhpc_dm/mounts".\n${reason}`);
+    	  }
+    	});
 	  },
       tooltip: 'Mount uftp fs'
     });
