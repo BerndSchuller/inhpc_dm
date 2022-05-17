@@ -1,6 +1,9 @@
 import os
 import json
 
+from os.path import dirname
+from pathlib import Path
+
 from notebook.base.handlers import APIHandler
 from notebook.utils import url_path_join
 
@@ -21,17 +24,30 @@ class MountsHandler(APIHandler):
         """
             File where the current user preferences for the DM tool are stored
         """
-        return os.environ['HOME']+"/.inhpc/settings.json"
+        name = os.environ['HOME']+"/.inhpc/settings.json"
+        self.assert_dir_exists(name)
+        return name
 
     def get_mount_info_path(self):
         """
             File where the current mounts are stored
         """
-        return os.environ['HOME']+"/.inhpc/mounts.json"
+        name = os.environ['HOME']+"/.inhpc/mounts.json"
+        self.assert_dir_exists(name)
+        return name
+
+    def assert_dir_exists(self, name):
+        try:
+            Path(dirname(name)).mkdir()
+        except:
+            pass
 
     def read_mount_info(self):
-        with open(self.get_mount_info_path(), 'r') as f:
-            return json.load(f)
+        try:
+            with open(self.get_mount_info_path(), 'r') as f:
+                return json.load(f)
+        except:
+            return {}
 
     def store_mount_info(self, mount_info):
         with open(self.get_mount_info_path(), 'w') as f:
