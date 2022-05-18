@@ -12,7 +12,8 @@ import {
   MainAreaWidget,
   WidgetTracker,
   Toolbar,
-  ToolbarButton
+  ToolbarButton,
+  showErrorMessage
 } from '@jupyterlab/apputils';
 
 import { DocumentManager} from '@jupyterlab/docmanager';
@@ -109,18 +110,19 @@ export class dmWidget extends Widget {
     const tb_mount_uftp = new ToolbarButton({
       icon: newFolderIcon,
 	  label: "Mount UFTP",
-      onClick: async () => {
-        getMountInfo(this._settings["uftp_endpoints"]).then(value => {
+      onClick: () => {
+        getMountInfo(this._settings["uftp_endpoints"]).then(async value => {
           console.log('mount params: ' + JSON.stringify(value.value));
           // POST request
           try {
-      		const data = requestAPI<any>('mounts', {
+      		const data = await requestAPI<any>('mounts', {
       		    'body': JSON.stringify(value.value),
       		    'method': 'POST'});
       		console.log(data);
       		this._infoWidget.textareaNode.value = JSON.stringify(data);
-    	  } catch (reason) {
-      		console.error(`Error on GET /inhpc_dm/mounts".\n${reason}`);
+      	  } catch (reason) {
+      		console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
+      		showErrorMessage("Error", reason)
     	  }
     	});
 	  },

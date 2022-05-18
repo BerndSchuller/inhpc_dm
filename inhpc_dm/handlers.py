@@ -52,7 +52,18 @@ class MountsHandler(APIHandler):
     def store_mount_info(self, mount_info):
         with open(self.get_mount_info_path(), 'w') as f:
             f.write(json.dumps(mount_info))
-        
+
+    def write_error(self, status_code, **kwargs):
+        """  override to send back error message as JSON content """
+        self.set_header("Content-Type", "application/json")
+        msg = self._reason
+        if "exc_info" in kwargs:
+            try:
+                msg = msg + " [" + str(kwargs["exc_info"][1]) + "]"
+            except:
+                pass
+        self.finish('{"message": "%s"}' % msg)
+       
     @tornado.web.authenticated
     def get(self):
         """
