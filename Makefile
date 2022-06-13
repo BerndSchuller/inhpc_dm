@@ -7,4 +7,4 @@ update:
 	jupyter server extension enable --user inhpc_dm
 
 clean:
-	find -name "*~" --delete
+	@find -name "*~" -delete

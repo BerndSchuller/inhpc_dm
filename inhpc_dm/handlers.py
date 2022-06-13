@@ -1,12 +1,13 @@
 import os
 import json
 
-from os.path import dirname
+from os.path import abspath, dirname
 from pathlib import Path
 
 from notebook.base.handlers import APIHandler
 from notebook.utils import url_path_join
 
+from subprocess import Popen
 import tornado
 import uuid
 
@@ -35,6 +36,10 @@ class MountsHandler(APIHandler):
         name = os.environ['HOME']+"/.inhpc/mounts.json"
         self.assert_dir_exists(name)
         return name
+
+    def force_unmount(self, mount_dir):
+        child = Popen("fusermount -u %s" % mount_dir, shell=True)
+        child.wait()
 
     def assert_dir_exists(self, name):
         try:
@@ -89,10 +94,13 @@ class MountsHandler(APIHandler):
         
         protocol = request_data.get("protocol", "uftp")
         mount_point = request_data['mount_point']
-        
+        if not mount_point.startswith("/"):
+            mount_point = os.path.abspath(mount_point)
+        self.force_unmount(mount_point)
+
         if "uftp"==protocol:
             parameters = request_data
-            uftp_handler.mount(mount_point, parameters)
+            exit_code = uftp_handler.mount(mount_point, parameters)
             id = uuid.uuid4().hex
             mount_info = self.read_mount_info()
             parameters["protocol"] = "uftp"

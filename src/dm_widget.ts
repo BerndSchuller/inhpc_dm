@@ -469,6 +469,7 @@ export class dmWidget extends Widget {
   private _panel_collection: SplitPanel;
   private _settings = {
 	"uftp_endpoints": [
+	    "https://localhost:9000/rest/auth/TEST",
 		"https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
 		"https://uftp.fz-juelich.de:9112/UFTP_Auth/rest/auth/JUDAC",
 		"https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
