@@ -28,13 +28,11 @@ import {
 //	FilenameSearcher as dm_FilenameSearcher
 } from '@jupyterlab/filebrowser';
 import {
-  dm_BreadCrumbs,
-} from './mod_crumbs';
-import {
   dm_FilenameSearcher
 } from './mod_search';
 
 import { 
+  BreadCrumbs,
   Uploader,
   DirListing,
   FilterFileBrowserModel
@@ -112,7 +110,7 @@ export class dm_FileBrowser extends Widget {
 	const translator = this.translator;
     this._manager = model.manager;
     this._trans = this.translator.load('jupyterlab');
-    this._crumbs = new dm_BreadCrumbs({ model, translator });
+    this._crumbs = new BreadCrumbs({ model, translator });
     this.toolbar = new Toolbar<Widget>();
     // a11y
     this.toolbar.node.setAttribute('role', 'navigation');
@@ -436,7 +434,7 @@ export class dm_FileBrowser extends Widget {
   */
 
   private _trans: TranslationBundle;
-  private _crumbs: dm_BreadCrumbs;
+  private _crumbs: BreadCrumbs;
   private _listing: DirListing;
   private _filenameSearcher: ReactWidget;
   private _manager: IDocumentManager;
