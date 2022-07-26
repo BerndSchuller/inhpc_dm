@@ -136,6 +136,8 @@ export class dmWidget extends Widget {
     this._actionToolbar.addItem('uftp_info', tb_uftp_info);
     this._actionToolbar.addItem('mount_uftp', tb_mount_uftp);
 
+
+    //TODO: here the _settings ist where the url to mount is. --> can the filebrowser show this?
     // single panel with settings widget
     this._settingsWidget = new ContentWidget('Settings');
     this._settingsWidget.id = "settingsWidget";
