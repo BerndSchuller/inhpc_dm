@@ -7,14 +7,14 @@ import { InputGroup } from '@jupyterlab/ui-components';
 import { StringExt } from '@lumino/algorithm';
 import React, { useEffect, useState } from 'react';
 //import { DirListing } from './listing';
-//import { DirListing as dm_DirListing} from '@jupyterlab/filebrowser';
-import { dm_DirListing } from './mod_listing';
+import { DirListing } from '@jupyterlab/filebrowser';
+//import { dm_DirListing } from './mod_listing';
 
 /**
  * The class name added to the filebrowser crumbs node.
  */
 export interface IFilterBoxProps {
-  listing: dm_DirListing;
+  listing: DirListing;
   useFuzzyFilter: boolean;
   placeholder?: string;
   forceRefresh?: boolean;

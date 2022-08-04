@@ -30,9 +30,13 @@ import {
   Widget
 } from '@lumino/widgets';
 
-import { FilterFileBrowserModel } from '@jupyterlab/filebrowser';
-//import { dm_FilterFileBrowserModel } from './mod_model';
-import { dm_DirListing } from './mod_listing';
+import { 
+  FilterFileBrowserModel,
+  DirListing
+  //FileBrowser
+
+} from '@jupyterlab/filebrowser';
+
 import { dm_FileBrowser } from './mod_browser';
 
 import { requestAPI } from './dm_handler';
@@ -132,6 +136,8 @@ export class dmWidget extends Widget {
     this._actionToolbar.addItem('uftp_info', tb_uftp_info);
     this._actionToolbar.addItem('mount_uftp', tb_mount_uftp);
 
+
+    //TODO: here the _settings ist where the url to mount is. --> can the filebrowser show this?
     // single panel with settings widget
     this._settingsWidget = new ContentWidget('Settings');
     this._settingsWidget.id = "settingsWidget";
@@ -184,8 +190,10 @@ export class dmWidget extends Widget {
         model: fbModel_l},
       'Filebrowser left'
     );	
-    // connect to 'click' signal
-    this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
+    // connect to 'click' signal - only working in dm_DirListings
+    //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
+    
+    
     // info box
     this._fbInfo_l = new ContentWidget('Info');
     this._fbInfo_l.id = "fbInfo_l";
@@ -327,7 +335,7 @@ export class dmWidget extends Widget {
       'Filebrowser right'
     );	
     // connect to 'click' signal
-    this._fbWidget_r.listing.clicked.connect(this.eventSignalHandler, this);
+    //this._fbWidget_r.listing.clicked.connect(this.eventSignalHandler, this);
 
     // info box
     this._fbInfo_r = new ContentWidget('Info');
@@ -411,7 +419,7 @@ export class dmWidget extends Widget {
   *	Handle signals from visual objects used
   * Sender class and event type are usable information
   */
-  eventSignalHandler(sender: dm_DirListing, eventType:string): void {
+  eventSignalHandler(sender: DirListing, eventType:string): void {
 
     if (sender.constructor.name === 'dm_DirListing') {
       if (eventType === 'click') {

@@ -22,35 +22,20 @@ import { IIterator } from '@lumino/algorithm';
 
 import { PanelLayout, Widget } from '@lumino/widgets';
 
-//import { BreadCrumbs } from './crumbs';
-//import { DirListing } from './listing';
-//import { FilterFileBrowserModel } from './model';
-//import { Uploader } from './upload';
-//import { FilenameSearcher } from './search';
-
 import { 
 //	BreadCrumbs as dm_BreadCrumbs, 
-//	DirListing as dm_DirListing,
 //	FileBrowser,
-//	Uploader as dm_Uploader, 
 //	FilenameSearcher as dm_FilenameSearcher
 } from '@jupyterlab/filebrowser';
-import {
-  dm_BreadCrumbs,
-} from './mod_crumbs';
-import { 
- dm_DirListing 
-} from './mod_listing';
-import {
-  dm_Uploader,
-} from './mod_upload';
 import {
   dm_FilenameSearcher
 } from './mod_search';
 
 import { 
+  BreadCrumbs,
+  Uploader,
   DirListing,
-  FilterFileBrowserModel //as dm_FilterFileBrowserModel
+  FilterFileBrowserModel
 } from '@jupyterlab/filebrowser';
 // import {
 //   dm_FilterFileBrowserModel
@@ -125,7 +110,7 @@ export class dm_FileBrowser extends Widget {
 	const translator = this.translator;
     this._manager = model.manager;
     this._trans = this.translator.load('jupyterlab');
-    this._crumbs = new dm_BreadCrumbs({ model, translator });
+    this._crumbs = new BreadCrumbs({ model, translator });
     this.toolbar = new Toolbar<Widget>();
     // a11y
     this.toolbar.node.setAttribute('role', 'navigation');
@@ -143,7 +128,7 @@ export class dm_FileBrowser extends Widget {
       tooltip: this._trans.__('New Folder')
     });
     //using dm_Uploader here
-    const uploader = new dm_Uploader({ model, translator: this.translator });
+    const uploader = new Uploader({ model, translator: this.translator });
 
     const refresher = new ToolbarButton({
       icon: refreshIcon,
@@ -158,7 +143,7 @@ export class dm_FileBrowser extends Widget {
     this.toolbar.addItem('refresher', refresher);
 
     //original: listing without _; this.createDirListing, but inner content is the same
-    this._listing = new dm_DirListing({
+    this._listing = new DirListing({
       model,
       renderer,
       translator: this.translator
@@ -421,7 +406,7 @@ export class dm_FileBrowser extends Widget {
   //this stuff is new:
 
   // avoid dual signaling, instead offer DirListing instead to connect
-  get listing(): dm_DirListing {
+  get listing(): DirListing {
     return this._listing;
   }
 //  // signal to be consumed by other objects
@@ -449,8 +434,8 @@ export class dm_FileBrowser extends Widget {
   */
 
   private _trans: TranslationBundle;
-  private _crumbs: dm_BreadCrumbs;
-  private _listing: dm_DirListing;
+  private _crumbs: BreadCrumbs;
+  private _listing: DirListing;
   private _filenameSearcher: ReactWidget;
   private _manager: IDocumentManager;
   private _directoryPending: boolean;
