@@ -98,20 +98,26 @@ class MountsHandler(APIHandler):
             mount_point = os.path.abspath(mount_point)
             request_data['mount_point'] = mount_point
         self.force_unmount(mount_point)
-
+        self.assert_dir_exists(mount_point)
         if "uftp"==protocol:
             parameters = request_data
-            exit_code = uftp_handler.mount(mount_point, parameters)
+            exit_code, error_info = uftp_handler.mount(mount_point, parameters)
             id = uuid.uuid4().hex
             mount_info = self.read_mount_info()
             parameters["protocol"] = "uftp"
             mount_info[id] = parameters
-            self.store_mount_info(mount_info)
         else:
             raise Exception("No handler for protocol %s", protocol)
-        
-        data = {"status": "OK", "id": id}
-        self.finish(json.dumps(data))
+        result_data = {}
+        if exit_code == 0:
+            result_data["status"] = "OK"
+            result_data["id"] = id
+            self.store_mount_info(mount_info)
+        else:
+            result_data["status"] = "ERROR"
+            result_data["exit_code"] = exit_code
+            result_data["error_info"] = error_info
+        self.finish(json.dumps(result_data))
 
 
 def setup_handlers(web_app, url_path):
