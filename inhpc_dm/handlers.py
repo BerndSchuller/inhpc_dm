@@ -96,6 +96,7 @@ class MountsHandler(APIHandler):
         mount_point = request_data['mount_point']
         if not mount_point.startswith("/"):
             mount_point = os.path.abspath(mount_point)
+            request_data['mount_point'] = mount_point
         self.force_unmount(mount_point)
 
         if "uftp"==protocol:
