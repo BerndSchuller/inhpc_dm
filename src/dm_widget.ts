@@ -90,6 +90,8 @@ export class dmWidget extends Widget {
     super();
     this.addClass('my-dmWidget');
 
+  //===============================Mount Buttons=============================
+
     // single panel with action toolbar buttons
     this._actionToolbar = new Toolbar<Widget>();
     this._actionToolbar.id = "actionToolbar";
@@ -193,15 +195,6 @@ export class dmWidget extends Widget {
     // connect to 'click' signal - only working in dm_DirListings
     //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
     
-    
-    // info box
-    this._fbInfo_l = new ContentWidget('Info');
-    this._fbInfo_l.id = "fbInfo_l";
-    this._fbInfo_l.textareaNode.value="Info left FileBrowser";
-    //this._fbInfo_l.textareaNode.cols=50;
-    //this._fbInfo_l.textareaNode.rows=4;
-    this._fbInfo_l.textareaNode.style.width="95%";
-    this._fbInfo_l.textareaNode.style.height="95%";
 
     // filebrowser + info box in new panel
     this._fbPanel_l = new SplitPanel({
@@ -212,7 +205,6 @@ export class dmWidget extends Widget {
     });
     this._fbPanel_l.id = 'fb_panel_l';
     this._fbPanel_l.addWidget(this._fbWidget_l);
-    this._fbPanel_l.addWidget(this._fbInfo_l);
     this._fbPanel_l.setRelativeSizes([85, 15]);
     
     //----------------------------- Transfer Buttons --------------------------------
@@ -337,13 +329,8 @@ export class dmWidget extends Widget {
     // connect to 'click' signal
     //this._fbWidget_r.listing.clicked.connect(this.eventSignalHandler, this);
 
-    // info box
-    this._fbInfo_r = new ContentWidget('Info');
-    this._fbInfo_r.id = "fbInfo_r";
-    this._fbInfo_r.textareaNode.value="Info right FileBrowser";
-    this._fbInfo_r.textareaNode.style.width="95%";
-    this._fbInfo_r.textareaNode.style.height="95%";
-
+    //XXX TODO
+    //this._fbWidget_r.toolbar.addItem("mountBtn", tb_mount_uftp);
 
     // filebrowser + info box in new panel
     this._fbPanel_r = new SplitPanel({
@@ -352,7 +339,6 @@ export class dmWidget extends Widget {
     });
     this._fbPanel_r.id = 'fb_panel_r';
     this._fbPanel_r.addWidget(this._fbWidget_r);
-    this._fbPanel_r.addWidget(this._fbInfo_r);
     this._fbPanel_r.setRelativeSizes([85, 15]);
     
     //----------------------------------------------------------------------------------------
@@ -370,7 +356,7 @@ export class dmWidget extends Widget {
     // test to listen on signal "refreshed"
     fbModel_l.refreshed.connect(logger_onModelRefreshed);
 
-    //=======================================================================================
+    //=====================================Log bottom of the Page==================================================
     // lower panel for log output
     this._logWidget = new ContentWidget('Log');
     this._logWidget.id = "logWidget";
@@ -435,7 +421,7 @@ export class dmWidget extends Widget {
         });
         
         text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
-        this._fbInfo_l.textareaNode.value=text;
+        //this._fbInfo_l.textareaNode.value=text;
         
         //right panel
         text = "Selected Files Info";
@@ -449,7 +435,7 @@ export class dmWidget extends Widget {
         });
       
         text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
-        this._fbInfo_r.textareaNode.value=text;
+        //this._fbInfo_r.textareaNode.value=text;
 
       } else {
               console.log('Unknown in DirListing: ', eventType);
@@ -465,10 +451,8 @@ export class dmWidget extends Widget {
   private _top_panel: SplitPanel;
   private _infoWidget: ContentWidget;
   private _fbWidget_l: dm_FileBrowser;
-  private _fbInfo_l: ContentWidget;
   private _fbPanel_l: SplitPanel;
   private _fbWidget_r: dm_FileBrowser;
-  private _fbInfo_r: ContentWidget;
   private _fbPanel_r: SplitPanel;
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
