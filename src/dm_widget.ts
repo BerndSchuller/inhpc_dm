@@ -19,7 +19,8 @@ import {
 import { DocumentManager} from '@jupyterlab/docmanager';
 import { DocumentRegistry} from '@jupyterlab/docregistry';
 import { ServiceManager} from '@jupyterlab/services';
-import { newFolderIcon} from '@jupyterlab/ui-components';
+import { //newFolderIcon, 
+  settingsIcon} from '@jupyterlab/ui-components';
 import { each} from '@lumino/algorithm';
 import { Message} from '@lumino/messaging';
 
@@ -114,8 +115,8 @@ export class dmWidget extends Widget {
 
     //Mount UFTP Button on the top
     const tb_mount_uftp = new ToolbarButton({
-      icon: newFolderIcon,
-	  label: "Mount UFTP",
+      icon: settingsIcon,//newFolderIcon,
+	  //label: "Mount UFTP",
       onClick: () => {
         getMountInfo(this._settings["uftp_endpoints"]).then(async value => {
           console.log('mount params: ' + JSON.stringify(value.value));
@@ -136,7 +137,7 @@ export class dmWidget extends Widget {
     });
 
     this._actionToolbar.addItem('uftp_info', tb_uftp_info);
-    this._actionToolbar.addItem('mount_uftp', tb_mount_uftp);
+    //this._actionToolbar.addItem('mount_uftp', tb_mount_uftp);
 
 
     //TODO: here the _settings ist where the url to mount is. --> can the filebrowser show this?
@@ -330,7 +331,7 @@ export class dmWidget extends Widget {
     //this._fbWidget_r.listing.clicked.connect(this.eventSignalHandler, this);
 
     //XXX TODO
-    //this._fbWidget_r.toolbar.addItem("mountBtn", tb_mount_uftp);
+    this._fbWidget_r.toolbar.addItem("mountBtn", tb_mount_uftp);
 
     // filebrowser + info box in new panel
     this._fbPanel_r = new SplitPanel({
