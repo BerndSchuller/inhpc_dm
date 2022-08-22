@@ -26,7 +26,7 @@ class MountsHandler(APIHandler):
             File where the current user preferences for the DM tool are stored
         """
         name = os.environ['HOME']+"/.inhpc/settings.json"
-        self.assert_dir_exists(name)
+        self.assert_dir_exists(dirname(name))
         return name
 
     def get_mount_info_path(self):
@@ -34,7 +34,7 @@ class MountsHandler(APIHandler):
             File where the current mounts are stored
         """
         name = os.environ['HOME']+"/.inhpc/mounts.json"
-        self.assert_dir_exists(name)
+        self.assert_dir_exists(dirname(name))
         return name
 
     def force_unmount(self, mount_dir):
@@ -43,9 +43,11 @@ class MountsHandler(APIHandler):
 
     def assert_dir_exists(self, name):
         try:
-            Path(dirname(name)).mkdir()
+            target = Path(name);
+            if not (target.exists() and target.is_dir()):
+                target.mkdir()
         except:
-            pass
+            self.log.error("Cannot create directory: '%s' " % name)
 
     def read_mount_info(self):
         try:

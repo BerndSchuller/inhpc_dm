@@ -119,17 +119,22 @@ export class dmWidget extends Widget {
 	  //label: "Mount UFTP",
       onClick: () => {
         getMountInfo(this._settings["uftp_endpoints"]).then(async value => {
-          console.log('mount params: ' + JSON.stringify(value.value));
-          // POST request
-          try {
-      		const data = await requestAPI<any>('mounts', {
-      		    'body': JSON.stringify(value.value),
-      		    'method': 'POST'});
-      		console.log(data);
-      		this._infoWidget.textareaNode.value = JSON.stringify(data);
-      	  } catch (reason) {
-      		console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
-      		showErrorMessage("Error", reason)
+          var req_data = JSON.stringify(value.value);
+          if(req_data!="null") {
+            console.log('mount params: ' + req_data);
+            // POST request
+            try {
+      		  const data = await requestAPI<any>('mounts', {
+      		      'body': req_data,
+      		      'method': 'POST'});
+      		  console.log(data);
+      		  this._infoWidget.textareaNode.value = JSON.stringify(data);
+      	    } catch (reason) {
+      		  console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
+      		  showErrorMessage("Error", reason)
+    	    }
+    	  } else {
+    	    console.log('Mount cancelled');
     	  }
     	});
 	  },
