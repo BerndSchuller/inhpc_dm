@@ -19,8 +19,10 @@ import {
 import { DocumentManager} from '@jupyterlab/docmanager';
 import { DocumentRegistry} from '@jupyterlab/docregistry';
 import { ServiceManager} from '@jupyterlab/services';
-import { //newFolderIcon, 
-  settingsIcon} from '@jupyterlab/ui-components';
+import { newFolderIcon
+  //,   LabIcon 
+} from '@jupyterlab/ui-components';
+
 import { each} from '@lumino/algorithm';
 import { Message} from '@lumino/messaging';
 
@@ -43,7 +45,6 @@ import { dm_FileBrowser } from './mod_browser';
 import { requestAPI } from './dm_handler';
 
 import { getMountInfo } from './dm_dialogs';
-
 
 // example class generating widgets used for showing colourful test widgets (based on css classes)
 // https://github.com/jupyterlab/lumino/issues/43
@@ -115,7 +116,7 @@ export class dmWidget extends Widget {
 
     //Mount UFTP Button on the top
     const tb_mount_uftp = new ToolbarButton({
-      icon: settingsIcon,//newFolderIcon,
+      icon: newFolderIcon,//,mountIcon
 	  //label: "Mount UFTP",
       onClick: () => {
         getMountInfo(this._settings["uftp_endpoints"]).then(async value => {
