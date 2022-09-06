@@ -15,7 +15,7 @@ const INPUT_DIALOG_CLASS = 'jp-Input-Dialog';
  */
 class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
 
-  constructor(availableEndpoints: string[] = []) {
+  constructor(availableEndpoints: string[] = [], mountDirectory: string = "") {
     super();
     this.addClass(INPUT_DIALOG_CLASS);
 
@@ -62,6 +62,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this._input_localDir = document.createElement('input');
     this._input_localDir.classList.add('jp-mod-styled');
     this._input_localDir.id = 'jp-dialog-input-id_ld';
+    this._input_localDir.value = mountDirectory;
 
     const labelElement_ld = document.createElement('label');
     labelElement_ld.textContent = "Mount point";
@@ -123,9 +124,9 @@ export function showDialog<T>(
   return dialog.launch();
 }
 
- export function getMountInfo(availableEndpoints?: string[]): Promise<Dialog.IResult<string>> {
+ export function getMountInfo(availableEndpoints: string[], mountDirectory: string): Promise<Dialog.IResult<string>> {
     return showDialog({
-      body: new MountDialog(availableEndpoints),
+      body: new MountDialog(availableEndpoints, mountDirectory),
       buttons: [
         Dialog.cancelButton({ label: 'Cancel' }),
         Dialog.okButton({ label: 'OK' })
