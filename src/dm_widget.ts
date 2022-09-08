@@ -1,5 +1,6 @@
 /**
- * Main data management file
+ * Main data management widget, containing toolbars,
+ * info windows and file browsers
  */
 
 import {
@@ -19,7 +20,10 @@ import {
 import { DocumentManager} from '@jupyterlab/docmanager';
 import { DocumentRegistry} from '@jupyterlab/docregistry';
 import { ServiceManager} from '@jupyterlab/services';
-import { newFolderIcon
+
+import { //newFolderIcon,
+  addIcon,
+  settingsIcon
   //,   LabIcon 
 } from '@jupyterlab/ui-components';
 
@@ -36,8 +40,6 @@ import {
 import { 
   FilterFileBrowserModel,
   DirListing
-  //FileBrowser
-
 } from '@jupyterlab/filebrowser';
 
 import { dm_FileBrowser } from './mod_browser';
@@ -46,9 +48,7 @@ import { requestAPI } from './dm_handler';
 
 import { getMountInfo } from './dm_dialogs';
 
-// example class generating widgets used for showing colourful test widgets (based on css classes)
-// https://github.com/jupyterlab/lumino/issues/43
-// https://github.com/jupyterlab/lumino/blob/master/examples/example-dockpanel/src/index.ts
+
 class ContentWidget extends Widget {
 
   static createNode(): HTMLElement {
@@ -83,132 +83,47 @@ class ContentWidget extends Widget {
 }//end contentWidget
 
 export class dmWidget extends Widget {
-  /**
-  * Construct a new data management widget.
-  * smallest elements first then combining in next level
-  * from single widget to line based panel to overall panel
-  */
+
   constructor(app: JupyterFrontEnd) {
     super();
     this.addClass('my-dmWidget');
 
-  //===============================Mount Buttons=============================
+    // ============= upper action toolbar panel =============
 
-    // single panel with action toolbar buttons
     this._actionToolbar = new Toolbar<Widget>();
     this._actionToolbar.id = "actionToolbar";
     
     //the Info UFTP Button on the top
     const tb_uftp_info = new ToolbarButton({
-      label: "Get info",
+      icon: settingsIcon,
       onClick: async () => {
          // GET request
     	try {
       		const data = await requestAPI<any>('mounts');
       		console.log(data);
-      		this._infoWidget.textareaNode.value = JSON.stringify(data);
+      		// TODO
+      		this._logWidget.textareaNode.value = JSON.stringify(data);
     	} catch (reason) {
       		console.error(`Error on GET /inhpc_dm/mounts".\n${reason}`);
     	}
 	  },
-      tooltip: "Run 'uftp info'"
-    });
-
-    //Mount UFTP Button on the top
-    const tb_mount_uftp = new ToolbarButton({
-      icon: newFolderIcon,//,mountIcon
-	  //label: "Mount UFTP",
-      onClick: () => {
-        getMountInfo(this._settings["uftp_endpoints"]).then(async value => {
-          var req_data = JSON.stringify(value.value);
-          if(req_data!="null") {
-            console.log('mount params: ' + req_data);
-            // POST request
-            try {
-      		  const data = await requestAPI<any>('mounts', {
-      		      'body': req_data,
-      		      'method': 'POST'});
-      		  console.log(data);
-      		  this._infoWidget.textareaNode.value = JSON.stringify(data);
-      	    } catch (reason) {
-      		  console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
-      		  showErrorMessage("Error", reason)
-    	    }
-    	  } else {
-    	    console.log('Mount cancelled');
-    	  }
-    	});
-	  },
-      tooltip: 'Mount uftp fs'
-    });
-
-    const tb_mount_uftp_left = new ToolbarButton({
-      icon: newFolderIcon,//,mountIcon
-	  //label: "Mount UFTP",
-      onClick: () => {
-        getMountInfo(this._settings["uftp_endpoints"]).then(async value => {
-          var req_data = JSON.stringify(value.value);
-          if(req_data!="null") {
-            console.log('mount params: ' + req_data);
-            // POST request
-            try {
-      		  const data = await requestAPI<any>('mounts', {
-      		      'body': req_data,
-      		      'method': 'POST'});
-      		  console.log(data);
-      		  this._infoWidget.textareaNode.value = JSON.stringify(data);
-      	    } catch (reason) {
-      		  console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
-      		  showErrorMessage("Error", reason)
-    	    }
-    	  } else {
-    	    console.log('Mount cancelled');
-    	  }
-    	});
-	  },
-      tooltip: 'Mount uftp fs'
+      tooltip: "Get mounts information"
     });
 
     this._actionToolbar.addItem('uftp_info', tb_uftp_info);
-    //this._actionToolbar.addItem('mount_uftp', tb_mount_uftp);
 
-
-    //TODO: here the _settings ist where the url to mount is. --> can the filebrowser show this?
-    // single panel with settings widget
-    this._settingsWidget = new ContentWidget('Settings');
-    this._settingsWidget.id = "settingsWidget";
-    this._settingsWidget.textareaNode.value = "Settings\n" + JSON.stringify(this._settings);
-    this._settingsWidget.textareaNode.style.width = "95%";
-    this._settingsWidget.textareaNode.style.height = "80px";
-    
-    // single panel with info widget, will later be extended and moved below file browsers
-    this._infoWidget = new ContentWidget('Info');
-    this._infoWidget.id = "infoWidget";
-    // this._infoWidget.textareaNode.value="Event Monitor";
-    this._infoWidget.textareaNode.value="'lib' selected\n'dm_listing.js' selected";
-    this._infoWidget.textareaNode.style.width = "95%";
-    this._infoWidget.textareaNode.style.height = "80px";
-
-    // top horizontal panel including actions and settings
-    //this._top_panel = new BoxPanel({
+    // top horizontal panel
     this._top_panel = new SplitPanel({
-      //  direction: 'left-to-right', // BoxPanel
-      orientation: 'horizontal', // SplitPanel
-      //  renderer: SplitPanel.defaultRenderer,
-      //  spacing: 1
+      orientation: 'horizontal',
     });
     this._top_panel.id = 'top_panel';
-    // add settings and actions to top_panel
     this._top_panel.addClass('dm_Widget-main');
     this._top_panel.addWidget(this._actionToolbar);
-    this._top_panel.addWidget(this._settingsWidget);
-    this._top_panel.addWidget(this._infoWidget);
-    this._top_panel.setRelativeSizes([20, 50, 30 ]);
     
-	//====================== middle part of the filebrowser view ===========================================
+	// ============= Dual FileBrowser view ======================================
 	
-    // left ("_l") and right ("_r") file browser panel each including browser and info panels
-    // common preparations
+    // left ("_l") and right ("_r") file browser panel each 
+    // including browser and info panels
     let docRegistry = new DocumentRegistry();
     const servicemanager = new ServiceManager();
     let docManager = new DocumentManager({
@@ -216,48 +131,49 @@ export class dmWidget extends Widget {
       manager: servicemanager,
       opener
     });
-    // let fbRenderer = new dm_Renderer();
-    // left panel filebrowser and info
-    // let fbModel_l = new dm_FilterFileBrowserModel({ manager: docManager });
+    
+    // ============= Left FileBrowser ======================================
+    
     let fbModel_l = new FilterFileBrowserModel({ manager: docManager });
 
     this._fbWidget_l = new dm_FileBrowser({
         id: 'filebrowser-left',
         model: fbModel_l},
       'Filebrowser left'
-    );	
-    // connect to 'click' signal - only working in dm_DirListings
-    //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
-    //XXX TODO
-    this._fbWidget_l.toolbar.addItem("mountBtn", tb_mount_uftp_left);
+    );
 
-    // filebrowser + info box in new panel
+    // TODO connect to 'click' signal for displaying / updating file info?
+    //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
+
+    const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._logWidget, this._settings["uftp_endpoints"]);
+    this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
+
+    this._infoWidget_l = new ContentWidget('Info');
+    this._infoWidget_l.id = "infoWidget_l";
+    this._infoWidget_l.textareaNode.value= "<n/a>";
+	this._infoWidget_l.textareaNode.style.width="95%";
+
     this._fbPanel_l = new SplitPanel({
-      //  direction: 'top-to-bottom', // BoxPanel
-      orientation: 'vertical', // SplitPanel
-      //  renderer: SplitPanel.defaultRenderer,
+      orientation: 'vertical',
       spacing: 1
     });
     this._fbPanel_l.id = 'fb_panel_l';
     this._fbPanel_l.addWidget(this._fbWidget_l);
+    this._fbPanel_l.addWidget(this._infoWidget_l);
     this._fbPanel_l.setRelativeSizes([85, 15]);
     
-    //----------------------------- Transfer Buttons --------------------------------
-    // Elements for the transfer boxpanel vertical between browsers
-    // copy right/left for direct copy
-    // transfer left/rigth for high speed transfer i.e. uftp
-
-    // Button copying file to right directly
+    // ============= Middle panel with copy/transfer buttons ======================================
+    
     const copyToRight = new ToolbarButton({
-      //  icon: newFolderIcon,
       label: "-->",
       onClick: () => {
+
         //only debug printing:
         var text = 'Action: Copy to right';
-        each(this._fbWidget_l.listing.selectedItems(), item => {
+        each(this._fbWidget_l.get_listing().selectedItems(), item => {
 		      text=text  + "\n" + item.path;
         });
-		    this._infoWidget.textareaNode.value=text;
+
         //end debug printing
 
         //the item clicked is item (item.path)
@@ -271,38 +187,31 @@ export class dmWidget extends Widget {
           this._fbWidget_r.copy();
           this._fbWidget_r.paste();
         });*/
+
+		    this._infoWidget_l.textareaNode.value=text;
       },
       tooltip: 'Copy left selected to right directory directly'
     });
-	
 
-	  // Button copying file to left directly
-	  const copyToLeft = new ToolbarButton({
-      //  icon: newFolderIcon,
-      label: "<--",
-      onClick: () => {
-        //console.log('Action: Copy to left');
-        //this._infoWidget.textareaNode.value='Action: Copy to left';
+	const copyToLeft = new ToolbarButton({
+    label: "<--",
+    onClick: () => {
         var text = 'Action: Copy to left';
-        each(this._fbWidget_r.listing.selectedItems(), item => {
+        each(this._fbWidget_r.get_listing().selectedItems(), item => {
           text=text  + "\n" + item.path;
         });
-        this._infoWidget.textareaNode.value=text;
+        this._infoWidget_r.textareaNode.value=text;
       },
       tooltip: 'Copy right selected to left directory directly'
     });
-	
-    // Button transferring file to right with transfer tool
+
     const transferToRight = new ToolbarButton({
-      //  icon: newFolderIcon,
       label: "==>",
       onClick: () => {
-        //console.log('Action: Transfer to right');
-        //this._infoWidget.textareaNode.value='Action: Transfer to right';
         var text = 'Action: Transfer to right';
         var logentry = '';
         var logtext = '';
-        each(this._fbWidget_l.listing.selectedItems(), item => {
+        each(this._fbWidget_l.get_listing().selectedItems(), item => {
           text=text  + "\n" + item.path;
           console.log("R_PATH: ",this._fbWidget_r.model.path);
           
@@ -314,26 +223,22 @@ export class dmWidget extends Widget {
           logtext = logtext + logentry + "\n" ;
           //this._logWidget.textareaNode.value = logtext;
         });
-        this._infoWidget.textareaNode.value=text;
+        this._infoWidget_l.textareaNode.value=text;
       },
       tooltip: 'Transfer left selected to right directory via transfer tool'
     });
     transferToRight.node.style.verticalAlign = "middle";
 
-    // Button transferring file to left with transfer tool
     const transferToLeft = new ToolbarButton({
-      //icon: newFolderIcon,
       label: "<==",
       onClick: () => {
-        //console.log('Action: Transfer to left');
-        //this._infoWidget.textareaNode.value='Action: Transfer to left';
         var text = 'Action: Transfer to left';
         var logentry = '';
         var logtext = '';
         
-        each(this._fbWidget_r.listing.selectedItems(), item => {
+        each(this._fbWidget_r.get_listing().selectedItems(), item => {
           text=text  + "\n" + item.path;
-          console.log("L_PATH: ",this._fbWidget_l.model.path);
+          console.log("L_PATH: ", this._fbWidget_l.model.path);
           if (this._fbWidget_l.model.path) {
             //
           }	
@@ -343,13 +248,12 @@ export class dmWidget extends Widget {
           logtext = logtext + logentry + "\n" ;
           //this._logWidget.textareaNode.value = logtext;
         });
-        this._infoWidget.textareaNode.value=text;		
+        this._infoWidget_r.textareaNode.value=text;		
       },
       tooltip: 'Transfer left selected to right directory  via transfer tool'
     });
     transferToLeft.node.style.verticalAlign = "bottom";
-    
-    // transfer boxpanel itself
+
     this._transferBoxPanel = new BoxPanel({
       direction: 'top-to-bottom'
     });
@@ -363,10 +267,9 @@ export class dmWidget extends Widget {
     this._transferBoxPanel.addWidget(transferToLeft);
     
 
-    //---------------------------------------------------------------------------------
-    // right panel filebrowser and info
- //   let fbModel_r = new dm_FilterFileBrowserModel({ manager: docManager });
- let fbModel_r = new FilterFileBrowserModel({ manager: docManager });
+    // ============= Right FileBrowser ======================================
+    
+    let fbModel_r = new FilterFileBrowserModel({ manager: docManager });
 
     this._fbWidget_r = new dm_FileBrowser({
         id: 'filebrowser-right',
@@ -375,21 +278,25 @@ export class dmWidget extends Widget {
     );	
     // connect to 'click' signal
     //this._fbWidget_r.listing.clicked.connect(this.eventSignalHandler, this);
+      
+    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._logWidget, this._settings["uftp_endpoints"]);
+    this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
 
-    //XXX TODO
-    this._fbWidget_r.toolbar.addItem("mountBtn", tb_mount_uftp);
+    this._infoWidget_r = new ContentWidget('Info');
+    this._infoWidget_r.id = "infoWidget_r";
+    this._infoWidget_r.textareaNode.value= "<n/a>";
+	this._infoWidget_r.textareaNode.style.width="95%";
 
-    // filebrowser + info box in new panel
     this._fbPanel_r = new SplitPanel({
       orientation: 'vertical',
       spacing: 1
     });
     this._fbPanel_r.id = 'fb_panel_r';
     this._fbPanel_r.addWidget(this._fbWidget_r);
+    this._fbPanel_r.addWidget(this._infoWidget_r);
     this._fbPanel_r.setRelativeSizes([85, 15]);
-    
-    //----------------------------------------------------------------------------------------
-    // horizontal panel including browser panels and transfer button
+
+
     this._fbPanel = new BoxPanel({
         direction: 'left-to-right',
         spacing: 1
@@ -399,23 +306,19 @@ export class dmWidget extends Widget {
     this._fbPanel.addWidget(this._fbPanel_l);
     this._fbPanel.addWidget(this._transferBoxPanel);
     this._fbPanel.addWidget(this._fbPanel_r);
-    
-    // test to listen on signal "refreshed"
-    fbModel_l.refreshed.connect(logger_onModelRefreshed);
-/*
-    //=====================================Log bottom of the Page==================================================
-    // lower panel for log output
+    //fbModel_l.refreshed.connect(logger_onModelRefreshed);
+
+    //========== Bottom Log window ============
     this._logWidget = new ContentWidget('Log');
     this._logWidget.id = "logWidget";
     this._logWidget.textareaNode.value="Log output";
     this._logWidget.textareaNode.style.width="95%";
     this._logWidget.textareaNode.style.height="95%";
-*/
-    // ==================== starting main panel collection =============================
 
+
+    // ======== Main panel =====================
     this._mainLayout = (this.layout = new BoxLayout());
     
-    // main split panel hosting all horizontal panels
     this._panel_collection = new SplitPanel({
           orientation: 'vertical'
     });
@@ -425,7 +328,6 @@ export class dmWidget extends Widget {
     //this._panel_collection.addWidget(this._logWidget);
     this._panel_collection.setRelativeSizes([15, 75, 10]);
     
-    // add the panel collection to the main layout
     this._mainLayout.addWidget(this._panel_collection);	
 
   }//end constructor
@@ -449,18 +351,20 @@ export class dmWidget extends Widget {
   }
 
   /**
-  *	Handle signals from visual objects used
-  * Sender class and event type are usable information
+  *	Handle signals / clicki events
+  *
+  * TODO is such a handler even needed/useful for anything? 
+  * If yes, it should be linked to a specific file browser instance
   */
-  eventSignalHandler(sender: DirListing, eventType:string): void {
+  eventSignalHandler(sender: DirListing, eventType: string): void {
 
-    if (sender.constructor.name === 'dm_DirListing') {
+    if (sender.constructor.name === 'DirListing') {
       if (eventType === 'click') {
 
-        //left panel
+        //left FB
         var text = "Selected Files Info";
         var size_sum = 0;
-        each(this._fbWidget_l.listing.selectedItems(), item => {
+        each(this._fbWidget_l.get_listing().selectedItems(), item => {
           if (item.size) 
             size_sum = size_sum + item.size;
           if (item.size) 
@@ -468,13 +372,12 @@ export class dmWidget extends Widget {
         });
         
         text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
-        //this._fbInfo_l.textareaNode.value=text;
         
-        //right panel
+        //right FB
         text = "Selected Files Info";
         size_sum = 0;
         
-        each(this._fbWidget_r.listing.selectedItems(), item => {
+        each(this._fbWidget_r.get_listing().selectedItems(), item => {
           if (item.size) 
             size_sum = size_sum + item.size;
           if (item.size) 
@@ -482,8 +385,7 @@ export class dmWidget extends Widget {
         });
       
         text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
-        //this._fbInfo_r.textareaNode.value=text;
-
+      
       } else {
               console.log('Unknown in DirListing: ', eventType);
       }
@@ -494,16 +396,16 @@ export class dmWidget extends Widget {
 
 
   private _actionToolbar: Toolbar;
-  private _settingsWidget: ContentWidget;
   private _top_panel: SplitPanel;
-  private _infoWidget: ContentWidget;
   private _fbWidget_l: dm_FileBrowser;
+  private _infoWidget_l: ContentWidget;
   private _fbPanel_l: SplitPanel;
   private _fbWidget_r: dm_FileBrowser;
+  private _infoWidget_r: ContentWidget;
   private _fbPanel_r: SplitPanel;
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
-  //private _logWidget: ContentWidget;
+  private _logWidget: ContentWidget;
   private _mainLayout: BoxLayout;
   private _panel_collection: SplitPanel;
   private _settings = {
@@ -514,25 +416,49 @@ export class dmWidget extends Widget {
 		"https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
 	]
   };
-  
-  /**
-  * Handle update requests for the widget.
-  */
-  //async onUpdateRequest(msg: Message): Promise<void> {
-  //  console.log('dmWidget.onUpdateRequest');
-  //}
 
 }// end class dmWidget
 
-
 /**
-* Handle signals with logging before integrating them in normal functions
-* used i.e. where a method needs to be passed instead a string i.e. for signals
-*/
-//function logger_onModelRefreshed(sender: dm_FilterFileBrowserModel): void {
-function logger_onModelRefreshed(sender: FilterFileBrowserModel): void {
-//  console.log('fb_model refreshed');
-}
+ * Button for mounting remote FS
+ */
+export class dm_MountButton extends ToolbarButton {
+
+	constructor(fb: dm_FileBrowser, log: ContentWidget, endpoints: string[]){
+		super( {
+          icon: addIcon,
+	      tooltip: 'Mount remote filesystem via UFTP',
+	      onClick: () => { this.handle_click(fb, log, endpoints); }
+	    });
+	}
+	
+	handle_click(fb: dm_FileBrowser, log: ContentWidget, endpoints: string[]){
+	    console.log(this);
+        var mountDirectory = fb.get_selected_directory();
+        getMountInfo(endpoints, mountDirectory).then(async value => {
+          var req_data = JSON.stringify(value.value);
+          if(req_data!="null") {
+            console.log('mount params: ' + req_data);
+            // perform POST request
+            try {
+      		  const data = await requestAPI<any>('mounts', {
+      		      'body': req_data,
+      		      'method': 'POST'});
+      		  console.log(data);
+      		  // TODO
+      		  log.textareaNode.value = JSON.stringify(data);
+      	    } catch (reason) {
+      		    console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
+      		    showErrorMessage("Error", reason)
+    	    }
+    	  } else {
+    	    console.log('Mount cancelled');
+    	    log.textareaNode.value = 'Mount cancelled';
+    	  }
+	    });
+	}
+
+} // end dm_MountButton
 
 /**
 * Activate the Data Management widget extension originally
@@ -543,20 +469,15 @@ export function activate_dm(
   restorer: ILayoutRestorer, 
   ) {
 
-  console.log('JupyterLab extension InHPC data management is activated!');
-  // Start Data Management with two browsers
-  // Add an application command
-  // the execute method is attached to the command but executed only when the
-  // command is called, thus the "missing" tracker definition then exists 
-  // Declare a widget variable
+  console.log('JupyterLab extension InHPC data management activating.');
+
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
   app.commands.addCommand(command_dm, {
-    label: 'InHPC - Data Management with two browsers',
+    label: 'InHPC - Data Management dual browser view',
     execute: () => {      
       if (! widget_dm || widget_dm.isDisposed) {
-		  //console.log('Widget dm does not exist/disposed');
-        // Create a new widget if one does not exist
+		// Create a new widget if one does not exist
         const dmwidget = new dmWidget(app);
 		    dmwidget.id = 'dmwidget_id';
         widget_dm = new MainAreaWidget({ content: dmwidget });
@@ -574,7 +495,6 @@ export function activate_dm(
       }
       widget_dm.content.update();
 
-      // Activate the widget
       app.shell.activateById(widget_dm.id);
     }
   });
