@@ -17,6 +17,7 @@ import { IDocumentManager } from '@jupyterlab/docmanager';
 import { Contents, ServerConnection } from '@jupyterlab/services';
 
 import { newFolderIcon, refreshIcon } from '@jupyterlab/ui-components';
+//import { mountIcon } from './dm_icons';
 
 import { IIterator } from '@lumino/algorithm';
 

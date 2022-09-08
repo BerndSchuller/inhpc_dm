@@ -142,6 +142,33 @@ export class dmWidget extends Widget {
       tooltip: 'Mount uftp fs'
     });
 
+    const tb_mount_uftp_left = new ToolbarButton({
+      icon: newFolderIcon,//,mountIcon
+	  //label: "Mount UFTP",
+      onClick: () => {
+        getMountInfo(this._settings["uftp_endpoints"]).then(async value => {
+          var req_data = JSON.stringify(value.value);
+          if(req_data!="null") {
+            console.log('mount params: ' + req_data);
+            // POST request
+            try {
+      		  const data = await requestAPI<any>('mounts', {
+      		      'body': req_data,
+      		      'method': 'POST'});
+      		  console.log(data);
+      		  this._infoWidget.textareaNode.value = JSON.stringify(data);
+      	    } catch (reason) {
+      		  console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
+      		  showErrorMessage("Error", reason)
+    	    }
+    	  } else {
+    	    console.log('Mount cancelled');
+    	  }
+    	});
+	  },
+      tooltip: 'Mount uftp fs'
+    });
+
     this._actionToolbar.addItem('uftp_info', tb_uftp_info);
     //this._actionToolbar.addItem('mount_uftp', tb_mount_uftp);
 
@@ -201,7 +228,8 @@ export class dmWidget extends Widget {
     );	
     // connect to 'click' signal - only working in dm_DirListings
     //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
-    
+    //XXX TODO
+    this._fbWidget_l.toolbar.addItem("mountBtn", tb_mount_uftp_left);
 
     // filebrowser + info box in new panel
     this._fbPanel_l = new SplitPanel({
@@ -224,13 +252,25 @@ export class dmWidget extends Widget {
       //  icon: newFolderIcon,
       label: "-->",
       onClick: () => {
-        //console.log('Action: Copy to right');
-        //this._infoWidget.textareaNode.value='Action: Copy to right';
+        //only debug printing:
         var text = 'Action: Copy to right';
         each(this._fbWidget_l.listing.selectedItems(), item => {
 		      text=text  + "\n" + item.path;
         });
 		    this._infoWidget.textareaNode.value=text;
+        //end debug printing
+
+        //the item clicked is item (item.path)
+        /*
+        each(this._fbWidget_l.listing.selectedItems(), item => {
+		      
+          //var home = "~/";
+          this._fbWidget_r.clearSelectedItems();
+          console.log("Select item: " + (item.path));
+          this._fbWidget_r.selectItemByName(item.path);
+          this._fbWidget_r.copy();
+          this._fbWidget_r.paste();
+        });*/
       },
       tooltip: 'Copy left selected to right directory directly'
     });
@@ -272,7 +312,7 @@ export class dmWidget extends Widget {
 
           }
           logtext = logtext + logentry + "\n" ;
-          this._logWidget.textareaNode.value = logtext;
+          //this._logWidget.textareaNode.value = logtext;
         });
         this._infoWidget.textareaNode.value=text;
       },
@@ -301,7 +341,7 @@ export class dmWidget extends Widget {
             //logentry = this._settings["uftp_bin"] + " cp " + this._settings["uftp_url"] + item.path + " ./ " + this._settings["uftp_options"];
           }
           logtext = logtext + logentry + "\n" ;
-          this._logWidget.textareaNode.value = logtext;
+          //this._logWidget.textareaNode.value = logtext;
         });
         this._infoWidget.textareaNode.value=text;		
       },
@@ -362,7 +402,7 @@ export class dmWidget extends Widget {
     
     // test to listen on signal "refreshed"
     fbModel_l.refreshed.connect(logger_onModelRefreshed);
-
+/*
     //=====================================Log bottom of the Page==================================================
     // lower panel for log output
     this._logWidget = new ContentWidget('Log');
@@ -370,7 +410,7 @@ export class dmWidget extends Widget {
     this._logWidget.textareaNode.value="Log output";
     this._logWidget.textareaNode.style.width="95%";
     this._logWidget.textareaNode.style.height="95%";
-
+*/
     // ==================== starting main panel collection =============================
 
     this._mainLayout = (this.layout = new BoxLayout());
@@ -382,7 +422,7 @@ export class dmWidget extends Widget {
     this._panel_collection.id = 'panel_collection';
     this._panel_collection.addWidget(this._top_panel);
     this._panel_collection.addWidget(this._fbPanel);
-    this._panel_collection.addWidget(this._logWidget);
+    //this._panel_collection.addWidget(this._logWidget);
     this._panel_collection.setRelativeSizes([15, 75, 10]);
     
     // add the panel collection to the main layout
@@ -463,7 +503,7 @@ export class dmWidget extends Widget {
   private _fbPanel_r: SplitPanel;
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
-  private _logWidget: ContentWidget;
+  //private _logWidget: ContentWidget;
   private _mainLayout: BoxLayout;
   private _panel_collection: SplitPanel;
   private _settings = {
