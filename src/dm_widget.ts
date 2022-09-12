@@ -170,23 +170,17 @@ export class dmWidget extends Widget {
 
         //only debug printing:
         var text = 'Action: Copy to right';
-        each(this._fbWidget_l.get_listing().selectedItems(), item => {
+        each(this._fbWidget_l.getListing().selectedItems(), item => {
 		      text=text  + "\n" + item.path;
         });
 
         //end debug printing
 
         //the item clicked is item (item.path)
-        /*
-        each(this._fbWidget_l.listing.selectedItems(), item => {
-		      
-          //var home = "~/";
-          this._fbWidget_r.clearSelectedItems();
-          console.log("Select item: " + (item.path));
-          this._fbWidget_r.selectItemByName(item.path);
-          this._fbWidget_r.copy();
-          this._fbWidget_r.paste();
-        });*/
+        
+        each(this._fbWidget_l.getListing().selectedItems(), item => {
+		      this._fbWidget_r.copyFileFrom(item.path);
+        });
 
 		    this._infoWidget_l.textareaNode.value=text;
       },
@@ -197,7 +191,7 @@ export class dmWidget extends Widget {
     label: "<--",
     onClick: () => {
         var text = 'Action: Copy to left';
-        each(this._fbWidget_r.get_listing().selectedItems(), item => {
+        each(this._fbWidget_r.getListing().selectedItems(), item => {
           text=text  + "\n" + item.path;
         });
         this._infoWidget_r.textareaNode.value=text;
@@ -211,7 +205,7 @@ export class dmWidget extends Widget {
         var text = 'Action: Transfer to right';
         var logentry = '';
         var logtext = '';
-        each(this._fbWidget_l.get_listing().selectedItems(), item => {
+        each(this._fbWidget_l.getListing().selectedItems(), item => {
           text=text  + "\n" + item.path;
           console.log("R_PATH: ",this._fbWidget_r.model.path);
           
@@ -236,7 +230,7 @@ export class dmWidget extends Widget {
         var logentry = '';
         var logtext = '';
         
-        each(this._fbWidget_r.get_listing().selectedItems(), item => {
+        each(this._fbWidget_r.getListing().selectedItems(), item => {
           text=text  + "\n" + item.path;
           console.log("L_PATH: ", this._fbWidget_l.model.path);
           if (this._fbWidget_l.model.path) {
@@ -364,7 +358,7 @@ export class dmWidget extends Widget {
         //left FB
         var text = "Selected Files Info";
         var size_sum = 0;
-        each(this._fbWidget_l.get_listing().selectedItems(), item => {
+        each(this._fbWidget_l.getListing().selectedItems(), item => {
           if (item.size) 
             size_sum = size_sum + item.size;
           if (item.size) 
@@ -377,7 +371,7 @@ export class dmWidget extends Widget {
         text = "Selected Files Info";
         size_sum = 0;
         
-        each(this._fbWidget_r.get_listing().selectedItems(), item => {
+        each(this._fbWidget_r.getListing().selectedItems(), item => {
           if (item.size) 
             size_sum = size_sum + item.size;
           if (item.size) 
@@ -434,7 +428,7 @@ export class dm_MountButton extends ToolbarButton {
 	
 	handle_click(fb: dm_FileBrowser, log: ContentWidget, endpoints: string[]){
 	    console.log(this);
-        var mountDirectory = fb.get_selected_directory();
+        var mountDirectory = fb.getSelectedDirectory();
         getMountInfo(endpoints, mountDirectory).then(async value => {
           var req_data = JSON.stringify(value.value);
           if(req_data!="null") {

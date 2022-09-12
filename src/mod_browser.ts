@@ -10,6 +10,8 @@ import {
   FileBrowser
 } from '@jupyterlab/filebrowser';
 
+//import { PathExt } from '@jupyterlab/coreutils';
+
 export class dm_FileBrowser extends FileBrowser {
 	
 	constructor(options: FileBrowser.IOptions, title: string) {
@@ -17,11 +19,11 @@ export class dm_FileBrowser extends FileBrowser {
 		this.title.label = title;
 	}
 
-	get_listing(): DirListing {
+	getListing(): DirListing {
         return this.listing;
     }
     
-    get_selected_directory(): string {
+    getSelectedDirectory(): string {
         var selected = this.listing.model.path;
     	var item = this.listing.selectedItems().next()
     	if(item){
@@ -31,5 +33,31 @@ export class dm_FileBrowser extends FileBrowser {
 		}
         return selected;
     }
+
+	getCurrentPath(): string {
+		return this.listing.model.path;
+	}
+
+	copyFileFrom(pathToFile : string): void {
+		/*
+		var here = this.listing.model.driveName;
+
+		var prefix = this.listing.model.driveName;
+		console.log("I'm here: " + here);
+		console.log("File is here: " + (prefix + pathToFile));
+
+		this.listing.model.cd(PathExt.dirname(prefix + pathToFile));
+		console.log("i want to go to: " + PathExt.dirname(prefix + pathToFile));
+		console.log("I want to be here: " + (prefix + pathToFile) + " but I'm here: " + this.listing.model.path);
+		this.listing.clearSelectedItems();
+		this.selectItemByName(PathExt.basename(prefix + pathToFile)).catch(() => {
+			console.log("File " + (prefix + pathToFile) + " not found!");
+		});
+        this.copy();
+
+		this.listing.model.cd(here);
+        this.paste();
+		*/
+	}
 }
 
