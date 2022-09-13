@@ -47,7 +47,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this.node.appendChild(labelElement_ep);
     this.node.appendChild(this._input_endpoint);
     
-    //creating remote directory
+    // remote directory
     this._input_remoteDir = document.createElement('input');
     this._input_remoteDir.classList.add('jp-mod-styled');
     this._input_remoteDir.id = 'jp-dialog-input-id_rd';
@@ -58,7 +58,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this.node.appendChild(labelElement_rd);
     this.node.appendChild(this._input_remoteDir);
 
-    //creating local directory
+    // local directory
     this._input_localDir = document.createElement('input');
     this._input_localDir.classList.add('jp-mod-styled');
     this._input_localDir.id = 'jp-dialog-input-id_ld';
@@ -70,7 +70,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this.node.appendChild(labelElement_ld);
     this.node.appendChild(this._input_localDir);
 
-    //creating username
+    // username
     this._input_username = document.createElement('input');
     this._input_username.classList.add('jp-mod-styled');
     this._input_username.id = 'jp-dialog-input-id_un';
@@ -81,16 +81,39 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this.node.appendChild(labelElement_un);
     this.node.appendChild(this._input_username);
 
-    //creating password
+    // password
     this._input_password = document.createElement('input');
     this._input_password.classList.add('jp-mod-styled');
     this._input_password.type = 'password';
+    this._input_password.id = 'jp-dialog-input-id_pw';
 
     const labelElement_pw = document.createElement('label');
     labelElement_pw.textContent = "Password";
     labelElement_pw.htmlFor = this._input_password.id;
     this.node.appendChild(labelElement_pw);
     this.node.appendChild(this._input_password);
+
+    // token
+    this._input_token = document.createElement('input');
+    this._input_token.classList.add('jp-mod-styled');
+    this._input_token.id = 'jp-dialog-input-id_tok';
+
+    const labelElement_tok = document.createElement('label');
+    labelElement_tok.textContent = "OAuth token";
+    labelElement_tok.htmlFor = this._input_token.id;
+    this.node.appendChild(labelElement_tok);
+    this.node.appendChild(this._input_token);
+
+    // identity
+    this._input_identity = document.createElement('input');
+    this._input_identity.classList.add('jp-mod-styled');
+    this._input_identity.id = 'jp-dialog-input-id_identity';
+
+    const labelElement_identity = document.createElement('label');
+    labelElement_identity.textContent = "Path to private key";
+    labelElement_identity.htmlFor = this._input_identity.id;
+    this.node.appendChild(labelElement_identity);
+    this.node.appendChild(this._input_identity);
 
 
   }// end constructor
@@ -102,15 +125,18 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
   protected _input_localDir: HTMLInputElement;
   protected _input_username: HTMLInputElement;
   protected _input_password: HTMLInputElement;
+  protected _input_token: HTMLInputElement;
+  protected _input_identity: HTMLInputElement;
 
   getValue(): any {
     return { "endpoint": this._input_endpoint.value,
     		 "remote_directory": this._input_remoteDir.value,
     		 "mount_point": this._input_localDir.value,
     		 "credentials": {
-    		 	"type": "basic",
-    		 	"username": this._input_username.value,
-    		 	"password": this._input_password.value,
+				"username": this._input_username.value,
+				"password": this._input_password.value,
+				"token": this._input_token.value,
+				"identity": this._input_identity.value,
     		 }
     }
   }

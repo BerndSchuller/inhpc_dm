@@ -9,11 +9,13 @@ import {
 } from '@jupyterlab/application';
 
 import {
+  Dialog,
   ICommandPalette,
   MainAreaWidget,
   WidgetTracker,
   Toolbar,
   ToolbarButton,
+  showDialog,
   showErrorMessage
 } from '@jupyterlab/apputils';
 
@@ -145,7 +147,7 @@ export class dmWidget extends Widget {
     // TODO connect to 'click' signal for displaying / updating file info?
     //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
 
-    const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._logWidget, this._settings["uftp_endpoints"]);
+    const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings["uftp_endpoints"]);
     this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
 
     this._infoWidget_l = new ContentWidget('Info');
@@ -273,7 +275,7 @@ export class dmWidget extends Widget {
     // connect to 'click' signal
     //this._fbWidget_r.listing.clicked.connect(this.eventSignalHandler, this);
       
-    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._logWidget, this._settings["uftp_endpoints"]);
+    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings["uftp_endpoints"]);
     this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
 
     this._infoWidget_r = new ContentWidget('Info');
@@ -418,15 +420,15 @@ export class dmWidget extends Widget {
  */
 export class dm_MountButton extends ToolbarButton {
 
-	constructor(fb: dm_FileBrowser, log: ContentWidget, endpoints: string[]){
+	constructor(fb: dm_FileBrowser, endpoints: string[]){
 		super( {
           icon: addIcon,
 	      tooltip: 'Mount remote filesystem via UFTP',
-	      onClick: () => { this.handle_click(fb, log, endpoints); }
+	      onClick: () => { this.handle_click(fb, endpoints); }
 	    });
 	}
 	
-	handle_click(fb: dm_FileBrowser, log: ContentWidget, endpoints: string[]){
+	handle_click(fb: dm_FileBrowser, endpoints: string[]){
 	    console.log(this);
         var mountDirectory = fb.getSelectedDirectory();
         getMountInfo(endpoints, mountDirectory).then(async value => {
@@ -439,15 +441,21 @@ export class dm_MountButton extends ToolbarButton {
       		      'body': req_data,
       		      'method': 'POST'});
       		  console.log(data);
-      		  // TODO
-      		  log.textareaNode.value = JSON.stringify(data);
+      		  if("OK" == data.status) {
+      		  	showDialog({ title: "OK", body: "Mount successful",
+      		  	             buttons: [ Dialog.okButton() ] });
+      		  	// TODO: change directory on fb to new mount dir
+      		  	//fb....cd(mountDirectory);
+      		  }
+      		  else{
+	      		showErrorMessage("Error", data.error_info);
+	      	  }
       	    } catch (reason) {
       		    console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
-      		    showErrorMessage("Error", reason)
+      		    showErrorMessage("Error", reason);
     	    }
     	  } else {
     	    console.log('Mount cancelled');
-    	    log.textareaNode.value = 'Mount cancelled';
     	  }
 	    });
 	}
