@@ -43,6 +43,10 @@ def run_fusedriver(host, port, pwd, mount_point, debug=False):
     cmd = ""
     for c in cmds:
         cmd += c + u"\n"
+    return run_command(cmd)
+
+
+def run_command(cmd):
     try:
         raw_output = subprocess.check_output(cmd, shell=True, bufsize=4096,
                                              stderr=subprocess.STDOUT)
@@ -51,7 +55,6 @@ def run_fusedriver(host, port, pwd, mount_point, debug=False):
         raw_output = cpe.output
         exit_code = cpe.returncode
     return exit_code, raw_output.decode("UTF-8")
-
 
 def mount(mount_directory, parameters):
     """
@@ -74,3 +77,15 @@ def mount(mount_directory, parameters):
         output = repr(ex)
     return error_code, output
 
+
+def unmount(parameters):
+    """
+    Unmounts the requested directory
+    """
+    try:
+        cmd = "fusermount -u '%s'" % parameters['mount_point']
+        error_code, output = run_command(cmd)
+    except Exception as ex:
+        error_code = 1
+        output = repr(ex)
+    return error_code, output

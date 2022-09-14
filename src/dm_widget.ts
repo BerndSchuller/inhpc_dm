@@ -25,7 +25,8 @@ import { ServiceManager} from '@jupyterlab/services';
 
 import { //newFolderIcon,
   addIcon,
-  settingsIcon
+  clearIcon,
+  settingsIcon,
   //,   LabIcon 
 } from '@jupyterlab/ui-components';
 
@@ -106,7 +107,7 @@ export class dmWidget extends Widget {
       		// TODO
       		this._logWidget.textareaNode.value = JSON.stringify(data);
     	} catch (reason) {
-      		console.error(`Error on GET /inhpc_dm/mounts".\n${reason}`);
+      		console.error(`Error on GET /inhpc_dm/mount".\n${reason}`);
     	}
 	  },
       tooltip: "Get mounts information"
@@ -149,6 +150,8 @@ export class dmWidget extends Widget {
 
     const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings["uftp_endpoints"]);
     this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
+    const tb_unmountbutton_l = new dm_UnmountButton(this._fbWidget_l);
+    this._fbWidget_l.toolbar.addItem("unmountBtn", tb_unmountbutton_l);
 
     this._infoWidget_l = new ContentWidget('Info');
     this._infoWidget_l.id = "infoWidget_l";
@@ -277,6 +280,9 @@ export class dmWidget extends Widget {
       
     const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings["uftp_endpoints"]);
     this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
+
+    const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
+    this._fbWidget_r.toolbar.addItem("unmountBtn", tb_unmountbutton_r);
 
     this._infoWidget_r = new ContentWidget('Info');
     this._infoWidget_r.id = "infoWidget_r";
@@ -437,7 +443,7 @@ export class dm_MountButton extends ToolbarButton {
             console.log('mount params: ' + req_data);
             // perform POST request
             try {
-      		  const data = await requestAPI<any>('mounts', {
+      		  const data = await requestAPI<any>('mount', {
       		      'body': req_data,
       		      'method': 'POST'});
       		  console.log(data);
@@ -451,7 +457,7 @@ export class dm_MountButton extends ToolbarButton {
 	      		showErrorMessage("Error", data.error_info);
 	      	  }
       	    } catch (reason) {
-      		    console.error(`Error on POST /inhpc_dm/mounts".\n${reason}`);
+      		    console.error(`Error on POST /inhpc_dm/mount".\n${reason}`);
       		    showErrorMessage("Error", reason);
     	    }
     	  } else {
@@ -463,7 +469,46 @@ export class dm_MountButton extends ToolbarButton {
 } // end dm_MountButton
 
 /**
-* Activate the Data Management widget extension originally
+ * Button for un-mounting remote FS
+ */
+export class dm_UnmountButton extends ToolbarButton {
+
+	constructor(fb: dm_FileBrowser){
+		super( {
+          icon: clearIcon,
+	      tooltip: 'Unmount remote filesystem',
+	      onClick: () => { this.handle_click(fb); }
+	    });
+	}
+	
+	async handle_click(fb: dm_FileBrowser){
+	    console.log(this);
+        var mountDirectory = fb.getSelectedDirectory();
+        var req_data = JSON.stringify({ 'mount_point': mountDirectory })
+        console.log('mount params: ' + req_data);
+        try {
+      	  const data = await requestAPI<any>('unmount', {
+      	     'body': req_data,
+      	     'method': 'POST'});
+      	  console.log(data);
+      	  if("OK" == data.status) {
+      	    showDialog({ title: "OK", body: "Unmount successful",
+      	 	             buttons: [ Dialog.okButton() ] });
+      	 	// TODO trigger model refresh
+      	  }
+      	  else{
+	        showErrorMessage("Error", data.error_info);
+	      }
+      	} catch (reason) {
+      	    console.error(`Error on POST /inhpc_dm/unmount".\n${reason}`);
+      	    showErrorMessage("Error", reason);
+    	}
+	}
+
+} // end dm_UnmountButton
+
+/**
+* Activate the Data Management widget extension
 */
 export function activate_dm(
   app: JupyterFrontEnd, 

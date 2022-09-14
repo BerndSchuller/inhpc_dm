@@ -13,9 +13,9 @@ import uuid
 
 import inhpc_dm.uftp_handler as uftp_handler
 
-class MountsHandler(APIHandler):
+class MountHandler(APIHandler):
     """
-    REST API dealing with mounts
+    REST API dealing with mount
     
     Mount information is stored in a JSON file $HOME/.inhpc/mounts.json
 
@@ -93,7 +93,6 @@ class MountsHandler(APIHandler):
         required to initiate the mount such as remote URL, remote directory etc
         """
         request_data = self.get_json_body()
-        
         protocol = request_data.get("protocol", "uftp")
         mount_point = request_data['mount_point']
         if not mount_point.startswith("/"):
@@ -122,11 +121,50 @@ class MountsHandler(APIHandler):
         self.finish(json.dumps(result_data))
 
 
+class UnmountHandler(APIHandler):
+    """
+    REST API dealing with unmount
+
+    """
+    def write_error(self, status_code, **kwargs):
+        """  override to send back error message as JSON content """
+        self.set_header("Content-Type", "application/json")
+        msg = self._reason
+        if "exc_info" in kwargs:
+            try:
+                msg = msg + " [" + str(kwargs["exc_info"][1]) + "]"
+            except:
+                pass
+        self.finish('{"message": "%s"}' % msg)
+
+    @tornado.web.authenticated
+    def post(self):
+        """
+        Un-mount a directory
+        
+        input: JSON object 
+           {
+             'mount_point': 'local_directory',
+           }
+        """
+        request_data = self.get_json_body()
+        mount_point = request_data['mount_point']
+        if not mount_point.startswith("/"):
+            mount_point = os.path.abspath(mount_point)
+            request_data['mount_point'] = mount_point
+        exit_code, error_info = uftp_handler.unmount(request_data)
+        result_data = { "status": "OK" }
+        if exit_code != 0:
+            result_data["status"] = "ERROR"
+            result_data["exit_code"] = exit_code
+            result_data["error_info"] = error_info
+        self.finish(json.dumps(result_data))
+
+
 def setup_handlers(web_app, url_path):
     host_pattern = ".*$"
     base_url = web_app.settings["base_url"]
-
-    # Prepend the base_url so that it works in a JupyterHub setting
-    route_pattern = url_path_join(base_url, url_path, "mounts")
-    handlers = [(route_pattern, MountsHandler)]
+    handlers = [(url_path_join(base_url, url_path, "mount"), MountHandler),
+                (url_path_join(base_url, url_path, "unmount"), UnmountHandler)
+                ]
     web_app.add_handlers(host_pattern, handlers)
