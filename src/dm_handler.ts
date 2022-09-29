@@ -24,7 +24,17 @@ export async function requestAPI<T>(
   try {
     response = await ServerConnection.makeRequest(requestUrl, init, settings);
   } catch (error) {
-    throw new ServerConnection.NetworkError(error);
+    if(error instanceof Error)
+    {
+      throw new ServerConnection.NetworkError(error);
+    }
+    else
+    {
+      let err :TypeError
+      err = new TypeError("Serverside was not available, something went wrong");
+      console.log("Serverside was not available, something went wrong");
+      throw new ServerConnection.NetworkError(err);
+    }
   }
 
   if (!response.ok) {
