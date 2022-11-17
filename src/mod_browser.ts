@@ -10,7 +10,7 @@ import {
   FileBrowser
 } from '@jupyterlab/filebrowser';
 
-//import { PathExt } from '@jupyterlab/coreutils';
+import { PathExt } from '@jupyterlab/coreutils';
 
 export class dm_FileBrowser extends FileBrowser {
 	
@@ -38,26 +38,78 @@ export class dm_FileBrowser extends FileBrowser {
 		return this.listing.model.path;
 	}
 
-	copyFileFrom(pathToFile : string): void {
-		/*
-		var here = this.listing.model.driveName;
+	async copyFileFrom(pathToFile : string): Promise<void> {
+		
+		/*(var goTo = this.listing.model.manager.services.contents.resolvePath(
+			this.listing.model.path,
+			pathToFile
+		);*/
+		//var here = this.listing.model.driveName;
+		//var prefix = this.listing.model.driveName;
 
-		var prefix = this.listing.model.driveName;
-		console.log("I'm here: " + here);
-		console.log("File is here: " + (prefix + pathToFile));
+		console.log("File is: " + pathToFile);
 
-		this.listing.model.cd(PathExt.dirname(prefix + pathToFile));
-		console.log("i want to go to: " + PathExt.dirname(prefix + pathToFile));
-		console.log("I want to be here: " + (prefix + pathToFile) + " but I'm here: " + this.listing.model.path);
+		/*const { services } = this.listing.model.manager;
+		const localPath = services.contents.localPath(pathToFile);
+		console.log("New way: " + localPath);*/
+		//this.listing.model.cd(PathExt.dirname(prefix + pathToFile));
+
+		var actualPath = this.getCurrentPath();
+		console.log("I'm here: " + this.getCurrentPath());
+		
+		//moving to the files path
+		await this.listing.model.cd("/");
+
+		let pathWithOutFile : string
+		pathWithOutFile = PathExt.dirname(pathToFile);
+		await this.listing.model.cd(pathWithOutFile);
+		//this.update;
+		console.log("I'm here: " + this.getCurrentPath());//this.listing.model.path);
+
 		this.listing.clearSelectedItems();
-		this.selectItemByName(PathExt.basename(prefix + pathToFile)).catch(() => {
-			console.log("File " + (prefix + pathToFile) + " not found!");
-		});
-        this.copy();
 
-		this.listing.model.cd(here);
+		var file = (PathExt.basename(pathToFile));
+		this.selectItemByName(file).catch(() => {
+			console.log("File " + (PathExt.basename(pathToFile)) + " on path " + (pathToFile) + " not found!");
+		});
+
+		console.log(file+ " is selected ");
+        this.copy();
+		console.log( "copied ");
+		console.log(" preparing for cd to "+ actualPath);
+		await this.listing.model.cd("/");
+		console.log("I'm here: " + this.getCurrentPath());
+		await this.listing.model.cd(actualPath);
+		console.log("I'm here: " + this.getCurrentPath());
         this.paste();
-		*/
+		//console.log(file+ " is pasted ");
 	}
+/*
+	async function navigateToPath(
+		path: string,
+		factory: IFileBrowserFactory,
+		translator: ITranslator
+	  ): Promise<Contents.IModel> {
+
+		const trans = translator.load('jupyterlab');
+		const browserForPath = Private.getBrowserForPath(path, factory);
+		if (!browserForPath) {
+		  throw new Error(trans.__('No browser for path'));
+		}
+		
+		const { services } = getListing().model.manager;
+		const localPath = services.contents.localPath(path);
+	
+		await services.ready;
+		const item = await services.contents.get(path, { content: false });
+		const { model } = browserForPath;
+		await model.restored;
+		if (item.type === 'directory') {
+		  await model.cd(`/${localPath}`);
+		} else {
+		  await model.cd(`/${PathExt.dirname(localPath)}`);
+		}
+		return item;
+	  }*/
 }
 
