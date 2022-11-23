@@ -12,6 +12,7 @@ import tornado
 import uuid
 
 import inhpc_dm.uftp_handler as uftp_handler
+import inhpc_dm.tasks as tasks
 
 class MountHandler(APIHandler):
     """
@@ -160,11 +161,56 @@ class UnmountHandler(APIHandler):
             result_data["error_info"] = error_info
         self.finish(json.dumps(result_data))
 
+class TaskHandler(APIHandler):
+    """
+    REST API dealing with tasks (copy operations etc)
+    """
+
+    def write_error(self, status_code, **kwargs):
+        """  override to send back error message as JSON content """
+        self.set_header("Content-Type", "application/json")
+        msg = self._reason
+        if "exc_info" in kwargs:
+            try:
+                msg = msg + " [" + str(kwargs["exc_info"][1]) + "]"
+            except:
+                pass
+        self.finish('{"message": "%s"}' % msg)
+
+    @tornado.web.authenticated
+    def get(self):
+        """
+        Get tasks
+        """
+        self.finish(json.dumps({"tasks": [ t.json() for t in self.application.dm_tool_tasks ]}))
+
+    @tornado.web.authenticated
+    def post(self):
+        """
+        Launch a new task
+        
+        input: JSON object 
+           {
+            "cmd": "<command_template_name or command>"
+            "args": [...]
+           }
+        """
+        request_data = self.get_json_body()
+        cmd = request_data.get("command", "")
+        args = request_data.get("parameters", {})
+        task = tasks.Task(cmd, args)
+        # task.launch()...
+        self.application.dm_tool_tasks.append(task)
+        result_data = { "status": "OK" }
+        self.finish(json.dumps(result_data))
+
 
 def setup_handlers(web_app, url_path):
     host_pattern = ".*$"
     base_url = web_app.settings["base_url"]
     handlers = [(url_path_join(base_url, url_path, "mount"), MountHandler),
-                (url_path_join(base_url, url_path, "unmount"), UnmountHandler)
+                (url_path_join(base_url, url_path, "unmount"), UnmountHandler),
+                (url_path_join(base_url, url_path, "tasks"), TaskHandler),
                 ]
+    web_app.dm_tool_tasks = []
     web_app.add_handlers(host_pattern, handlers)

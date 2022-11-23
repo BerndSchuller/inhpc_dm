@@ -96,13 +96,13 @@ export class dmWidget extends Widget {
     this._actionToolbar = new Toolbar<Widget>();
     this._actionToolbar.id = "actionToolbar";
     
-    //the Info UFTP Button on the top
-    const tb_uftp_info = new ToolbarButton({
+    //the Mount Info Button on the top
+    const tb_mount_info = new ToolbarButton({
       icon: settingsIcon,
       onClick: async () => {
          // GET request
     	try {
-      		const data = await requestAPI<any>('mounts');
+      		const data = await requestAPI<any>('mount');
       		console.log(data);
       		// TODO
       		this._logWidget.textareaNode.value = JSON.stringify(data);
@@ -113,7 +113,7 @@ export class dmWidget extends Widget {
       tooltip: "Get mounts information"
     });
 
-    this._actionToolbar.addItem('uftp_info', tb_uftp_info);
+    this._actionToolbar.addItem('mount_info', tb_mount_info);
 
     // top horizontal panel
     this._top_panel = new SplitPanel({
@@ -166,105 +166,6 @@ export class dmWidget extends Widget {
     this._fbPanel_l.addWidget(this._fbWidget_l);
     this._fbPanel_l.addWidget(this._infoWidget_l);
     this._fbPanel_l.setRelativeSizes([85, 15]);
-    
-    // ============= Middle panel with copy/transfer buttons ======================================
-    
-    const copyToRight = new ToolbarButton({
-      label: "-->",
-      onClick: () => {
-
-        //only debug printing:
-        var text = 'Action: Copy to right';
-        each(this._fbWidget_l.getListing().selectedItems(), item => {
-		      text=text  + "\n" + item.path;
-        });
-
-        //end debug printing
-
-        //the item clicked is item (item.path)
-        
-        each(this._fbWidget_l.getListing().selectedItems(), item => {
-		      this._fbWidget_r.copyFileFrom(item.path);
-        });
-
-		    this._infoWidget_l.textareaNode.value=text;
-      },
-      tooltip: 'Copy left selected to right directory directly'
-    });
-
-	const copyToLeft = new ToolbarButton({
-    label: "<--",
-    onClick: () => {
-        var text = 'Action: Copy to left';
-        each(this._fbWidget_r.getListing().selectedItems(), item => {
-          text=text  + "\n" + item.path;
-        });
-        this._infoWidget_r.textareaNode.value=text;
-      },
-      tooltip: 'Copy right selected to left directory directly'
-    });
-
-    const transferToRight = new ToolbarButton({
-      label: "==>",
-      onClick: () => {
-        var text = 'Action: Transfer to right';
-        var logentry = '';
-        var logtext = '';
-        each(this._fbWidget_l.getListing().selectedItems(), item => {
-          text=text  + "\n" + item.path;
-          console.log("R_PATH: ",this._fbWidget_r.model.path);
-          
-          if (this._fbWidget_r.model.path) {
-            console.log("Path empty");
-          } else {
-
-          }
-          logtext = logtext + logentry + "\n" ;
-          //this._logWidget.textareaNode.value = logtext;
-        });
-        this._infoWidget_l.textareaNode.value=text;
-      },
-      tooltip: 'Transfer left selected to right directory via transfer tool'
-    });
-    transferToRight.node.style.verticalAlign = "middle";
-
-    const transferToLeft = new ToolbarButton({
-      label: "<==",
-      onClick: () => {
-        var text = 'Action: Transfer to left';
-        var logentry = '';
-        var logtext = '';
-        
-        each(this._fbWidget_r.getListing().selectedItems(), item => {
-          text=text  + "\n" + item.path;
-          console.log("L_PATH: ", this._fbWidget_l.model.path);
-          if (this._fbWidget_l.model.path) {
-            //
-          }	
-          else {
-            //logentry = this._settings["uftp_bin"] + " cp " + this._settings["uftp_url"] + item.path + " ./ " + this._settings["uftp_options"];
-          }
-          logtext = logtext + logentry + "\n" ;
-          //this._logWidget.textareaNode.value = logtext;
-        });
-        this._infoWidget_r.textareaNode.value=text;		
-      },
-      tooltip: 'Transfer left selected to right directory  via transfer tool'
-    });
-    transferToLeft.node.style.verticalAlign = "bottom";
-
-    this._transferBoxPanel = new BoxPanel({
-      direction: 'top-to-bottom'
-    });
-    this._transferBoxPanel.id = "transferToolbar";
-    this._transferBoxPanel.node.style.maxWidth="100px";
-    this._transferBoxPanel.node.style.maxHeight="100px";
-    this._transferBoxPanel.node.style.top="200px";
-    this._transferBoxPanel.addWidget(copyToRight);
-    this._transferBoxPanel.addWidget(copyToLeft);
-    this._transferBoxPanel.addWidget(transferToRight);
-    this._transferBoxPanel.addWidget(transferToLeft);
-    
 
     // ============= Right FileBrowser ======================================
     
@@ -296,9 +197,31 @@ export class dmWidget extends Widget {
     this._fbPanel_r.id = 'fb_panel_r';
     this._fbPanel_r.addWidget(this._fbWidget_r);
     this._fbPanel_r.addWidget(this._infoWidget_r);
-    this._fbPanel_r.setRelativeSizes([85, 15]);
+    this._fbPanel_r.setRelativeSizes([90, 10]);
+
+    
+    // ============= Middle panel with copy buttons =====================================
+    
+    const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r,
+        '-->', 'Copy left selected to right directory directly');
+
+	const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l,
+        '<--', 'Copy right selected to left directory directly');
+
+    this._transferBoxPanel = new BoxPanel({
+      direction: 'top-to-bottom'
+    });
+    this._transferBoxPanel.id = "transferToolbar";
+    this._transferBoxPanel.node.style.maxWidth="100px";
+    this._transferBoxPanel.node.style.maxHeight="100px";
+    this._transferBoxPanel.node.style.top="200px";
+    this._transferBoxPanel.addWidget(copyToRight);
+    this._transferBoxPanel.addWidget(copyToLeft);
+    
 
 
+    // ============= Middle main panel: FB-left / transfer buttons / FB-right ==============
+    
     this._fbPanel = new BoxPanel({
         direction: 'left-to-right',
         spacing: 1
@@ -308,7 +231,6 @@ export class dmWidget extends Widget {
     this._fbPanel.addWidget(this._fbPanel_l);
     this._fbPanel.addWidget(this._transferBoxPanel);
     this._fbPanel.addWidget(this._fbPanel_r);
-    //fbModel_l.refreshed.connect(logger_onModelRefreshed);
 
     //========== Bottom Log window ============
     this._logWidget = new ContentWidget('Log');
@@ -327,8 +249,8 @@ export class dmWidget extends Widget {
     this._panel_collection.id = 'panel_collection';
     this._panel_collection.addWidget(this._top_panel);
     this._panel_collection.addWidget(this._fbPanel);
-    //this._panel_collection.addWidget(this._logWidget);
-    this._panel_collection.setRelativeSizes([15, 75, 10]);
+    this._panel_collection.addWidget(this._logWidget);
+    this._panel_collection.setRelativeSizes([10, 80, 10]);
     
     this._mainLayout.addWidget(this._panel_collection);	
 
@@ -506,6 +428,53 @@ export class dm_UnmountButton extends ToolbarButton {
 	}
 
 } // end dm_UnmountButton
+
+/**
+ * Button for launching copy task
+ */
+export class dm_CopyButton extends ToolbarButton {
+
+	constructor(source: dm_FileBrowser, target: dm_FileBrowser, label: string, tooltip: string){
+		super( {
+          label: label,
+	      tooltip: tooltip,
+	      onClick: () => { this.handle_click(source, target); }
+	    });
+	}
+	
+	async handle_click(source: dm_FileBrowser, target: dm_FileBrowser){
+	    var _action = "copy";
+	    var _target_dir = target.getSelectedDirectory();
+	    var _sources: string[] = []
+	    each(source.getListing().selectedItems(), item => {
+		      _sources.push(item.path)
+        });
+		var req_data = JSON.stringify({
+						"command": _action,
+		                "parameters": { 
+		                    "target" : _target_dir,
+		                    "sources": _sources }
+		                })	
+        console.log('Copy command params: ' + req_data);
+        try {
+      	  const data = await requestAPI<any>('tasks', {
+      	     'body': req_data,
+      	     'method': 'POST'});
+      	  console.log(data);
+      	  if("OK" == data.status) {
+      	    showDialog({ title: "OK", body: "Task launched successfully",
+      	 	             buttons: [ Dialog.okButton() ] });
+      	  }
+      	  else{
+	        showErrorMessage("Error", data.error_info);
+	      }
+      	} catch (reason) {
+      	    console.error(`Error on POST /inhpc_dm/tasks".\n${reason}`);
+      	    showErrorMessage("Error", reason);
+    	}
+	}
+
+} // end dm_CopyButton
 
 /**
 * Activate the Data Management widget extension
