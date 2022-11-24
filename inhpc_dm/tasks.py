@@ -1,14 +1,6 @@
 import subprocess
 
 
-def launch(cmd, args):
-    """
-    Runs command, returning the child process handle
-    """
-    
-    return subprocess.Popen(cmd, shell=True)
-    
-
 class Task():
     """
     Holds info about an asynchronous task, e.g. a long-running download operation
@@ -29,3 +21,8 @@ class Task():
                 }
 
 
+    def launch(cmd, args):
+        """
+        Runs command, returning the child process handle
+        """
+        return subprocess.Popen(cmd, shell=True)

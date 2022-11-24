@@ -1,7 +1,6 @@
 import os
 import json
 
-from os.path import abspath, dirname
 from pathlib import Path
 
 from notebook.base.handlers import APIHandler
@@ -14,35 +13,27 @@ import uuid
 import inhpc_dm.uftp_handler as uftp_handler
 import inhpc_dm.tasks as tasks
 
-class MountHandler(APIHandler):
-    """
-    REST API dealing with mount
-    
-    Mount information is stored in a JSON file $HOME/.inhpc/mounts.json
 
-    """
+class AbstractDMHandler(APIHandler):
+    """ Abstract base class for dm-tool handlers """
     
-    def get_settings_path(self):
+    def _get_settings_path(self):
         """
             File where the current user preferences for the DM tool are stored
         """
-        name = os.environ['HOME']+"/.inhpc/settings.json"
-        self.assert_dir_exists(dirname(name))
-        return name
+        settings_dir = os.environ['HOME']+"/.inhpc/"
+        self._assert_dir_exists(settings_dir)
+        return settings_dir + "settings.json"
 
-    def get_mount_info_path(self):
+    def _get_mount_info_path(self):
         """
             File where the current mounts are stored
         """
-        name = os.environ['HOME']+"/.inhpc/mounts.json"
-        self.assert_dir_exists(dirname(name))
-        return name
+        settings_dir = os.environ['HOME']+"/.inhpc/"
+        self._assert_dir_exists(settings_dir)
+        return settings_dir + "mounts.json"
 
-    def force_unmount(self, mount_dir):
-        child = Popen("fusermount -u %s" % mount_dir, shell=True)
-        child.wait()
-
-    def assert_dir_exists(self, name):
+    def _assert_dir_exists(self, name):
         try:
             target = Path(name);
             if not (target.exists() and target.is_dir()):
@@ -52,14 +43,27 @@ class MountHandler(APIHandler):
 
     def read_mount_info(self):
         try:
-            with open(self.get_mount_info_path(), 'r') as f:
+            with open(self._get_mount_info_path(), 'r') as f:
                 return json.load(f)
         except:
             return {}
 
     def store_mount_info(self, mount_info):
-        with open(self.get_mount_info_path(), 'w') as f:
+        with open(self._get_mount_info_path(), 'w') as f:
             f.write(json.dumps(mount_info))
+
+    def resolve_mount_point(self, directory):
+        """ find and return the mount info which contains the given directory """
+        mount_info = self.read_mount_info()
+        lookup = list(Path(directory).absolute().parts)
+        for id in mount_info:
+            m = mount_info.get(id)
+            mount_point = list(Path(m.get("mount_point")).parts)
+            # check if mount point is a parent dir for our target dir
+            if mount_point == lookup[0:len(mount_point)]:
+                return id, m
+        # nothing found
+        return None, None
 
     def write_error(self, status_code, **kwargs):
         """  override to send back error message as JSON content """
@@ -71,7 +75,21 @@ class MountHandler(APIHandler):
             except:
                 pass
         self.finish('{"message": "%s"}' % msg)
-       
+
+
+class MountHandler(AbstractDMHandler):
+    """
+    REST API dealing with mount
+    
+    Mount information is stored in a JSON file $HOME/.inhpc/mounts.json
+
+    """
+
+    def force_unmount(self, mount_dir):
+        child = Popen("fusermount -u %s" % mount_dir, shell=True)
+        child.wait()
+
+
     @tornado.web.authenticated
     def get(self):
         """
@@ -97,10 +115,10 @@ class MountHandler(APIHandler):
         protocol = request_data.get("protocol", "uftp")
         mount_point = request_data['mount_point']
         if not mount_point.startswith("/"):
-            mount_point = os.path.abspath(mount_point)
+            mount_point = str(Path(mount_point).absolute())
             request_data['mount_point'] = mount_point
         self.force_unmount(mount_point)
-        self.assert_dir_exists(mount_point)
+        self._assert_dir_exists(mount_point)
         if "uftp"==protocol:
             parameters = request_data
             exit_code, error_info = uftp_handler.mount(mount_point, parameters)
@@ -122,21 +140,11 @@ class MountHandler(APIHandler):
         self.finish(json.dumps(result_data))
 
 
-class UnmountHandler(APIHandler):
+class UnmountHandler(AbstractDMHandler):
     """
     REST API dealing with unmount
 
     """
-    def write_error(self, status_code, **kwargs):
-        """  override to send back error message as JSON content """
-        self.set_header("Content-Type", "application/json")
-        msg = self._reason
-        if "exc_info" in kwargs:
-            try:
-                msg = msg + " [" + str(kwargs["exc_info"][1]) + "]"
-            except:
-                pass
-        self.finish('{"message": "%s"}' % msg)
 
     @tornado.web.authenticated
     def post(self):
@@ -151,31 +159,29 @@ class UnmountHandler(APIHandler):
         request_data = self.get_json_body()
         mount_point = request_data['mount_point']
         if not mount_point.startswith("/"):
-            mount_point = os.path.abspath(mount_point)
+            mount_point = str(Path(mount_point).absolute())
             request_data['mount_point'] = mount_point
-        exit_code, error_info = uftp_handler.unmount(request_data)
+        id, mount = self.resolve_mount_point(mount_point)
+        if mount!=None:
+            request_data['mount_point'] = mount["mount_point"]
+            exit_code, error_info = uftp_handler.unmount(request_data)
+        else:
+            exit_code, error_info = -1, "Not a mounted directory"
         result_data = { "status": "OK" }
-        if exit_code != 0:
+        if exit_code == 0:
+            mount_info = self.read_mount_info()
+            mount_info.pop(id)
+            self.store_mount_info(mount_info)
+        else:
             result_data["status"] = "ERROR"
             result_data["exit_code"] = exit_code
             result_data["error_info"] = error_info
         self.finish(json.dumps(result_data))
 
-class TaskHandler(APIHandler):
+class TaskHandler(AbstractDMHandler):
     """
     REST API dealing with tasks (copy operations etc)
     """
-
-    def write_error(self, status_code, **kwargs):
-        """  override to send back error message as JSON content """
-        self.set_header("Content-Type", "application/json")
-        msg = self._reason
-        if "exc_info" in kwargs:
-            try:
-                msg = msg + " [" + str(kwargs["exc_info"][1]) + "]"
-            except:
-                pass
-        self.finish('{"message": "%s"}' % msg)
 
     @tornado.web.authenticated
     def get(self):
