@@ -52,9 +52,10 @@ class AbstractDMHandler(APIHandler):
         with open(self._get_mount_info_path(), 'w') as f:
             f.write(json.dumps(mount_info))
 
-    def resolve_mount_point(self, directory):
+    def resolve_mount_point(self, directory, mount_info=None):
         """ find and return the mount info which contains the given directory """
-        mount_info = self.read_mount_info()
+        if mount_info==None:
+            mount_info = self.read_mount_info()
         lookup = list(Path(directory).absolute().parts)
         for id in mount_info:
             m = mount_info.get(id)
@@ -188,7 +189,7 @@ class TaskHandler(AbstractDMHandler):
         """
         Get tasks
         """
-        self.finish(json.dumps({"tasks": [ t.json() for t in self.application.dm_tool_tasks ]}))
+        self.finish(json.dumps({"tasks": [ t.json() for t in self.application.dm_task_holder.tasks]}))
 
     @tornado.web.authenticated
     def post(self):
@@ -197,16 +198,32 @@ class TaskHandler(AbstractDMHandler):
         
         input: JSON object 
            {
-            "cmd": "<command_template_name or command>"
-            "args": [...]
+            "command": "<command_template_name or command>"
+            "parameters": [...]
            }
         """
         request_data = self.get_json_body()
         cmd = request_data.get("command", "")
         args = request_data.get("parameters", {})
-        task = tasks.Task(cmd, args)
-        # task.launch()...
-        self.application.dm_tool_tasks.append(task)
+        if "copy"!=cmd:
+            raise ValueError("Not understood: %s" % cmd)
+        sources = args["sources"]
+        target = args["target"]
+        if len(target)==0:
+            target = "."
+        mount_info = self.read_mount_info()
+        id_1, target_mount = self.resolve_mount_point(target, mount_info)
+        id_2, source_mount = self.resolve_mount_point(sources[0], mount_info)
+        if id_1==None and id_2==None:
+            raise ValueEror("Neither source nor target are remote")
+        if id_1!=None and id_2!=None:
+            raise ValueEror("Cannot have both remote source and remote target")
+        
+        cmd = uftp_handler.prepare_data_move_operation(sources, target, mount_info)
+        self.log.info("Running: %s" % cmd)
+        task = tasks.Task(cmd)
+        task.launch()
+        self.application.dm_task_holder.add(task)
         result_data = { "status": "OK" }
         self.finish(json.dumps(result_data))
 
@@ -218,5 +235,5 @@ def setup_handlers(web_app, url_path):
                 (url_path_join(base_url, url_path, "unmount"), UnmountHandler),
                 (url_path_join(base_url, url_path, "tasks"), TaskHandler),
                 ]
-    web_app.dm_tool_tasks = []
+    web_app.dm_task_holder = tasks.TaskHolder()
     web_app.add_handlers(host_pattern, handlers)
