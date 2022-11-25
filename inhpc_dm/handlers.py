@@ -215,9 +215,9 @@ class TaskHandler(AbstractDMHandler):
         id_1, target_mount = self.resolve_mount_point(target, mount_info)
         id_2, source_mount = self.resolve_mount_point(sources[0], mount_info)
         if id_1==None and id_2==None:
-            raise ValueEror("Neither source nor target are remote")
+            raise ValueError("Neither source nor target are remote")
         if id_1!=None and id_2!=None:
-            raise ValueEror("Cannot have both remote source and remote target")
+            raise ValueError("Cannot have both remote source and remote target")
         
         cmd = uftp_handler.prepare_data_move_operation(sources, target, mount_info)
         self.log.info("Running: %s" % cmd)
