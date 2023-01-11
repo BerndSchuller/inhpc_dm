@@ -1,0 +1,26 @@
+# Build package on every push
+
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install setuptools wheel
+        python -m pip install jupyter_packaging~=0.7.9 jupyterlab~=3.2
+    - name: Build
+      run: |
+        python -m pip install .
