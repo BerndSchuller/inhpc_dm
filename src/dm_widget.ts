@@ -23,11 +23,10 @@ import { DocumentManager} from '@jupyterlab/docmanager';
 import { DocumentRegistry} from '@jupyterlab/docregistry';
 import { ServiceManager} from '@jupyterlab/services';
 
-import { //newFolderIcon,
+import { 
   addIcon,
   clearIcon,
   settingsIcon,
-  //,   LabIcon 
 } from '@jupyterlab/ui-components';
 
 import { each} from '@lumino/algorithm';
@@ -359,6 +358,7 @@ export class dm_MountButton extends ToolbarButton {
 	handle_click(fb: dm_FileBrowser, endpoints: string[]){
 	    console.log(this);
         var mountDirectory = fb.getSelectedDirectory();
+        console.log("Mount dir: " + mountDirectory);
         getMountInfo(endpoints, mountDirectory).then(async value => {
           var req_data = JSON.stringify(value.value);
           if(req_data!="null") {
@@ -373,7 +373,8 @@ export class dm_MountButton extends ToolbarButton {
       		  	showDialog({ title: "OK", body: "Mount successful",
       		  	             buttons: [ Dialog.okButton() ] });
       		  	// TODO: change directory on fb to new mount dir
-      		  	//fb....cd(mountDirectory);
+              //await fb.getListing().model.cd("/");
+              //await fb.getListing().model.cd(mountDirectory);
       		  }
       		  else{
 	      		showErrorMessage("Error", data.error_info);
@@ -417,6 +418,8 @@ export class dm_UnmountButton extends ToolbarButton {
       	    showDialog({ title: "OK", body: "Unmount successful",
       	 	             buttons: [ Dialog.okButton() ] });
       	 	// TODO trigger model refresh
+          //fb.getListing().update;
+          //fb.update;
       	  }
       	  else{
 	        showErrorMessage("Error", data.error_info);
