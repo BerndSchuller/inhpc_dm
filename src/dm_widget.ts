@@ -13,7 +13,6 @@ import {
   ICommandPalette,
   MainAreaWidget,
   WidgetTracker,
-  Toolbar,
   ToolbarButton,
   showDialog,
   showErrorMessage
@@ -26,7 +25,6 @@ import { ServiceManager} from '@jupyterlab/services';
 import { 
   addIcon,
   clearIcon,
-  settingsIcon,
 } from '@jupyterlab/ui-components';
 
 import { each} from '@lumino/algorithm';
@@ -90,38 +88,6 @@ export class dmWidget extends Widget {
     super();
     this.addClass('my-dmWidget');
 
-    // ============= upper action toolbar panel =============
-
-    this._actionToolbar = new Toolbar<Widget>();
-    this._actionToolbar.id = "actionToolbar";
-    
-    //the Mount Info Button on the top
-    const tb_mount_info = new ToolbarButton({
-      icon: settingsIcon,
-      onClick: async () => {
-         // GET request
-    	try {
-      		const data = await requestAPI<any>('mount');
-      		console.log(data);
-      		// TODO
-      		this._logWidget.textareaNode.value = JSON.stringify(data);
-    	} catch (reason) {
-      		console.error(`Error on GET /inhpc_dm/mount".\n${reason}`);
-    	}
-	  },
-      tooltip: "Get mounts information"
-    });
-
-    this._actionToolbar.addItem('mount_info', tb_mount_info);
-
-    // top horizontal panel
-    this._top_panel = new SplitPanel({
-      orientation: 'horizontal',
-    });
-    this._top_panel.id = 'top_panel';
-    this._top_panel.addClass('dm_Widget-main');
-    this._top_panel.addWidget(this._actionToolbar);
-    
 	// ============= Dual FileBrowser view ======================================
 	
     // left ("_l") and right ("_r") file browser panel each 
@@ -164,7 +130,7 @@ export class dmWidget extends Widget {
     this._fbPanel_l.id = 'fb_panel_l';
     this._fbPanel_l.addWidget(this._fbWidget_l);
     this._fbPanel_l.addWidget(this._infoWidget_l);
-    this._fbPanel_l.setRelativeSizes([85, 15]);
+    this._fbPanel_l.setRelativeSizes([90, 10]);
 
     // ============= Right FileBrowser ======================================
     
@@ -204,7 +170,7 @@ export class dmWidget extends Widget {
     const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r,
         '-->', 'Copy left selected to right directory directly');
 
-	const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l,
+	  const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l,
         '<--', 'Copy right selected to left directory directly');
 
     this._transferBoxPanel = new BoxPanel({
@@ -216,8 +182,6 @@ export class dmWidget extends Widget {
     this._transferBoxPanel.node.style.top="200px";
     this._transferBoxPanel.addWidget(copyToRight);
     this._transferBoxPanel.addWidget(copyToLeft);
-    
-
 
     // ============= Middle main panel: FB-left / transfer buttons / FB-right ==============
     
@@ -231,14 +195,6 @@ export class dmWidget extends Widget {
     this._fbPanel.addWidget(this._transferBoxPanel);
     this._fbPanel.addWidget(this._fbPanel_r);
 
-    //========== Bottom Log window ============
-    this._logWidget = new ContentWidget('Log');
-    this._logWidget.id = "logWidget";
-    this._logWidget.textareaNode.value="Log output";
-    this._logWidget.textareaNode.style.width="95%";
-    this._logWidget.textareaNode.style.height="95%";
-
-
     // ======== Main panel =====================
     this._mainLayout = (this.layout = new BoxLayout());
     
@@ -246,9 +202,7 @@ export class dmWidget extends Widget {
           orientation: 'vertical'
     });
     this._panel_collection.id = 'panel_collection';
-    this._panel_collection.addWidget(this._top_panel);
     this._panel_collection.addWidget(this._fbPanel);
-    this._panel_collection.addWidget(this._logWidget);
     this._panel_collection.setRelativeSizes([10, 80, 10]);
     
     this._mainLayout.addWidget(this._panel_collection);	
@@ -317,9 +271,6 @@ export class dmWidget extends Widget {
     }
   }
 
-
-  private _actionToolbar: Toolbar;
-  private _top_panel: SplitPanel;
   private _fbWidget_l: dm_FileBrowser;
   private _infoWidget_l: ContentWidget;
   private _fbPanel_l: SplitPanel;
@@ -328,7 +279,6 @@ export class dmWidget extends Widget {
   private _fbPanel_r: SplitPanel;
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
-  private _logWidget: ContentWidget;
   private _mainLayout: BoxLayout;
   private _panel_collection: SplitPanel;
   private _settings = {
