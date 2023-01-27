@@ -48,9 +48,9 @@ export class dm_MountButton extends ToolbarButton {
       		  if("OK" == data.status) {
       		  	showDialog({ title: "OK", body: "Mount successful",
       		  	             buttons: [ Dialog.okButton() ] });
-      		  	// TODO: change directory on fb to new mount dir
-              //await fb.getListing().model.cd("/");
-              //await fb.getListing().model.cd(mountDirectory);
+      		  	// TODO: find a better/faster way to change directory
+                await fb.getListing().model.cd("/");
+                await fb.getListing().model.cd(mountDirectory);
       		  }
       		  else{
 	      		showErrorMessage("Error", data.error_info);
@@ -94,8 +94,9 @@ export class dm_UnmountButton extends ToolbarButton {
       	    showDialog({ title: "OK", body: "Unmount successful",
       	 	             buttons: [ Dialog.okButton() ] });
       	 	// TODO trigger model refresh
-          //fb.getListing().update;
-          //fb.update;
+            //below commands dont make any difference!
+            //fb.getListing().update;
+            //fb.update;
       	  }
       	  else{
 	        showErrorMessage("Error", data.error_info);
