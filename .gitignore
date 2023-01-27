@@ -13,5 +13,7 @@ inhpc_dm/labextension/
 .project
 .pydevproject
 
+__pycache__
+
 # OSX files
 .DS_Store

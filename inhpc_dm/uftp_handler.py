@@ -31,10 +31,9 @@ def _setup_credential(credentials):
                              identity = _identity)
 
 
-def create_uftp_handler(remote_directory, auth_url, credentials):
+def create_uftp_handler(remote_directory):
     """ creates a UFTP handler (not yet authenticated or connected) """
-    credential = _setup_credential(credentials)
-    return UFTP(Transport(credential), auth_url, remote_directory)
+    return UFTP(_setup_credential(credentials))
 
 
 def run_fusedriver(host, port, pwd, mount_point, debug=False):
@@ -122,14 +121,14 @@ def mount(mount_directory, parameters):
     mount_point = parameters['mount_point']
     credentials = parameters.get('credentials', {})
     try:
-        uftp = create_uftp_handler(remote_directory, auth_url, credentials)
-        (host, port, pwd) = uftp.authenticate()
+        uftp = UFTP()
+        (host, port, pwd) = uftp.authenticate(
+            _setup_credential(credentials), auth_url, remote_directory)
         uftp.open_uftp_session(host, port, pwd)
         # avoid launching FUSE driver after an error during connect
         st = uftp.stat(".")
         error_code, output = run_fusedriver(host, port, pwd, mount_point)
     except Exception as ex:
-        uftp.close()
         error_code = 1
         output = repr(ex)
     return error_code, output
