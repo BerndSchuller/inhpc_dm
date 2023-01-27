@@ -72,7 +72,7 @@ setup_args = dict(
     install_requires=[
         "jupyterlab~=3.0",
         "fusepy~=3.0.1",
-        "pyunicore>=0.14.0"
+        "pyunicore>=0.14.1"
     ],
     zip_safe=False,
     include_package_data=True,
