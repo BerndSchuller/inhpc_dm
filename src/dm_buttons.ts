@@ -33,10 +33,12 @@ export class dm_MountButton extends ToolbarButton {
 	
 	handle_click(fb: dm_FileBrowser, endpoints: string[]){
 	    console.log(this);
-        var mountDirectory = fb.getSelectedDirectory();
-        console.log("Mount dir: " + mountDirectory);
-        getMountInfo(endpoints, mountDirectory).then(async value => {
+        var selectedDirectory = fb.getSelectedDirectory();
+        getMountInfo(endpoints, selectedDirectory).then(async value => {
           var req_data = JSON.stringify(value.value);
+          // final mount directory from dialog result
+          var mountDirectory = JSON.parse(req_data).mount_point
+          console.log("Mount dir: " + mountDirectory);
           if(req_data!="null") {
             console.log('mount params: ' + req_data);
             // perform POST request
