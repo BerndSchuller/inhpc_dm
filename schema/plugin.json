@@ -1,0 +1,20 @@
+{
+    "title": "InhpcMount",
+    "description": "InhpcMount settings.",
+    "type":"object",
+    "properties": {
+      "unicornColor": {
+        "type":"integer",
+        "title": "Color of the unicorn",
+        "description": "The configuration for the main color of the unicoren.",
+        "default": 4
+      },
+      "foxMakesSound": {
+        "type":"boolean",
+        "title":"Does the fox make any sound?",
+        "description":"not sure if the fox makes any sound.",
+        "default":false
+
+      }
+    }
+  }

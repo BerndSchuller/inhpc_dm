@@ -33,6 +33,8 @@ import {
   DirListing
 } from '@jupyterlab/filebrowser';
 
+import{ ISettingRegistry } from '@jupyterlab/settingregistry';
+
 import { dm_FileBrowser } from './mod_browser';
 
 import { 
@@ -293,6 +295,8 @@ export function activate_dm(
   app: JupyterFrontEnd, 
   palette: ICommandPalette, 
   restorer: ILayoutRestorer, 
+  settingRegistry: ISettingRegistry,
+  extention_id: string
   ) {
 
   console.log('JupyterLab extension InHPC data management activating.');
@@ -334,4 +338,28 @@ export function activate_dm(
     command: command_dm,
     name: () => 'inhpc_dm'
   });
+  
+  function updateDefaultSettings(settings: ISettingRegistry.ISettings): void{
+
+  }
+/*
+  const updateSettings = (settings: ISettingRegistry.ISettings): void => {
+    item.model!.config ={
+      ...CodeEditor.defaultConfig,
+      ...(settings.get('editorConfig').composite as JSONObject)
+    };
+  };*/
+
+  Promise.all([settingRegistry.load(extention_id), app.restored])
+    .then(([settings]) => {
+      updateDefaultSettings(settings);
+      settings.changed.connect(() => {
+      updateDefaultSettings(settings);
+      });
+    })
+    .catch((reason: Error) => {
+      console.error(reason.message);
+    }
+  );
+  
 }
