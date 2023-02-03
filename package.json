@@ -78,7 +78,7 @@
   "styleModule": "style/index.js",
   "jupyterlab": {
     "extension": true,
-    "schemaDir": "schena",
+    "schemaDir": "schema",
     "outputDir": "inhpc_dm/labextension"
   }
 }
