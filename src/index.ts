@@ -23,7 +23,7 @@ import { activate_dm } from './dm_widget';
  * Initialization data for the jupyterlab extensions
  */
 const extension: JupyterFrontEndPlugin<void> = {
-  id: 'jupyterlab_inhpc:plugin',
+  id: '@jupyterlab/inhpc-extension:plugin',
   autoStart: true,
   requires: [ICommandPalette, ILayoutRestorer, ISettingRegistry],
   activate: (

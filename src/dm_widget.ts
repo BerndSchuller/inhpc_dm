@@ -139,7 +139,7 @@ export class dmWidget extends Widget {
     // connect to 'click' signal
     //this._fbWidget_r.getListing().clicked.connect(this.eventSignalHandler, this);
       
-    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings["uftp_endpoints"]);
+    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings["uftp_endpoints"], this._defaultEndpoint);
     this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
 
     const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
@@ -267,6 +267,10 @@ export class dmWidget extends Widget {
     }
   }
 
+  setDefaultEndpoint(endpoint: string): void {
+    this._defaultEndpoint = endpoint;
+  }
+
   private _fbWidget_l: dm_FileBrowser;
   private _infoWidget_l: ContentWidget;
   private _fbPanel_l: SplitPanel;
@@ -285,6 +289,7 @@ export class dmWidget extends Widget {
 		"https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
 	]
   };
+  private _defaultEndpoint: string;
 
 }// end class dmWidget
 
@@ -303,12 +308,13 @@ export function activate_dm(
 
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
+  const dmwidget = new dmWidget(app);
   app.commands.addCommand(command_dm, {
     label: 'InHPC - Data Management dual browser view',
     execute: () => {      
       if (! widget_dm || widget_dm.isDisposed) {
 		// Create a new widget if one does not exist
-        const dmwidget = new dmWidget(app);
+        //const dmwidget = new dmWidget(app);
 		    dmwidget.id = 'dmwidget_id';
         widget_dm = new MainAreaWidget({ content: dmwidget });
         widget_dm.id = 'inhpc-datamanagement';
@@ -339,8 +345,11 @@ export function activate_dm(
     name: () => 'inhpc_dm'
   });
   
-  function updateDefaultSettings(settings: ISettingRegistry.ISettings): void{
-
+  function updateDefaultSettings(regSettings: ISettingRegistry.ISettings): void{
+    let defHostSetting: string;
+    defHostSetting = regSettings.get("defaultHost").composite.toString();
+    console.log("Settings are: " + defHostSetting);
+    dmwidget.setDefaultEndpoint(defHostSetting);
   }
 /*
   const updateSettings = (settings: ISettingRegistry.ISettings): void => {
@@ -352,13 +361,14 @@ export function activate_dm(
 
   Promise.all([settingRegistry.load(extention_id), app.restored])
     .then(([settings]) => {
+      console.log("entering the promis, loading the settings ");
       updateDefaultSettings(settings);
       settings.changed.connect(() => {
       updateDefaultSettings(settings);
       });
     })
     .catch((reason: Error) => {
-      console.error(reason.message);
+      console.error("Problem with Settings: " + reason.message);
     }
   );
   

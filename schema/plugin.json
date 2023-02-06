@@ -3,18 +3,16 @@
     "description": "InhpcMount settings.",
     "type":"object",
     "properties": {
-      "unicornColor": {
-        "type":"integer",
-        "title": "Color of the unicorn",
-        "description": "The configuration for the main color of the unicoren.",
-        "default": 4
-      },
-      "foxMakesSound": {
-        "type":"boolean",
-        "title":"Does the fox make any sound?",
-        "description":"not sure if the fox makes any sound.",
-        "default":false
-
-      }
+      "defaultHost": {
+        "title": "Default mount endpoint",
+        "description": "The default endpoint for the UFTP mount",
+        "type":"string",
+        "enum":[" ", 
+        "https://localhost:9000/rest/auth/TEST",
+        "https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
+        "https://uftp.fz-juelich.de:9112/UFTP_Auth/rest/auth/JUDAC",
+        "https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"],
+        "default": " "
+      }      
     }
   }

@@ -23,18 +23,18 @@ import {
  */
 export class dm_MountButton extends ToolbarButton {
 
-	constructor(fb: dm_FileBrowser, endpoints: string[]){
+	constructor(fb: dm_FileBrowser, endpoints: string[], defaultEndpoint?: string){
 		super( {
           icon: addIcon,
 	      tooltip: 'Mount remote filesystem via UFTP',
-	      onClick: () => { this.handle_click(fb, endpoints); }
+	      onClick: () => { this.handle_click(fb, endpoints, defaultEndpoint); }
 	    });
 	}
 	
-	handle_click(fb: dm_FileBrowser, endpoints: string[]){
+	handle_click(fb: dm_FileBrowser, endpoints: string[], defaultEndpoint?: string){
 	    console.log(this);
         var selectedDirectory = fb.getSelectedDirectory();
-        getMountInfo(endpoints, selectedDirectory).then(async value => {
+        getMountInfo(endpoints, selectedDirectory, defaultEndpoint).then(async value => {
           var req_data = JSON.stringify(value.value);
           // final mount directory from dialog result
           var mountDirectory = JSON.parse(req_data).mount_point
