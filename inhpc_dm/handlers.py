@@ -227,6 +227,31 @@ class TaskHandler(AbstractDMHandler):
         result_data = { "status": "OK" }
         self.finish(json.dumps(result_data))
 
+class InfoHandler(AbstractDMHandler):
+    """
+    Show information about a directory
+    """
+
+    @tornado.web.authenticated
+    def get(self):
+        """
+        Get info about a file / directory
+
+        input: URL query parameters
+         "file": file path
+
+        """
+        requested_file = self.get_argument("file")
+        mount_info = self.read_mount_info()
+        id_1, target_mount = self.resolve_mount_point(requested_file, mount_info)
+        result_data = { "status": "OK" }
+        if id_1==None:
+            result_data["protocol"] = "local"
+        else:
+            for key in ["protocol", "endpoint", "remote_directory"]:
+                result_data[key] = target_mount[key]
+        self.finish(json.dumps(result_data))
+
 
 def setup_handlers(web_app, url_path):
     host_pattern = ".*$"
@@ -234,6 +259,7 @@ def setup_handlers(web_app, url_path):
     handlers = [(url_path_join(base_url, url_path, "mount"), MountHandler),
                 (url_path_join(base_url, url_path, "unmount"), UnmountHandler),
                 (url_path_join(base_url, url_path, "tasks"), TaskHandler),
+                (url_path_join(base_url, url_path, "info"), InfoHandler),
                 ]
     web_app.dm_task_holder = tasks.TaskHolder()
     web_app.add_handlers(host_pattern, handlers)
