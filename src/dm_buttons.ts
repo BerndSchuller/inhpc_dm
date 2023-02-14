@@ -36,34 +36,36 @@ export class dm_MountButton extends ToolbarButton {
         var selectedDirectory = fb.getSelectedDirectory();
         getMountInfo(endpoints, selectedDirectory, defaultEndpoint).then(async value => {
           var req_data = JSON.stringify(value.value);
-          // final mount directory from dialog result
-          var mountDirectory = JSON.parse(req_data).mount_point
-          console.log("Mount dir: " + mountDirectory);
-          if(req_data!="null") {
-            console.log('mount params: ' + req_data);
-            // perform POST request
-            try {
-      		  const data = await requestAPI<any>('mount', {
-      		      'body': req_data,
-      		      'method': 'POST'});
-      		  console.log(data);
-      		  if("OK" == data.status) {
-      		  	showDialog({ title: "OK", body: "Mount successful",
-      		  	             buttons: [ Dialog.okButton() ] });
-      		  	// TODO: find a better/faster way to change directory
-                await fb.getListing().model.cd("/");
-                await fb.getListing().model.cd(mountDirectory);
-      		  }
-      		  else{
-	      		showErrorMessage("Error", data.error_info);
-	      	  }
-      	    } catch (reason) {
-      		    console.error(`Error on POST /inhpc_dm/mount".\n${reason}`);
-      		    showErrorMessage("Error", reason);
-    	    }
-    	  } else {
-    	    console.log('Mount cancelled');
-    	  }
+		  if(req_data!="null") {
+			// final mount directory from dialog result
+			var mountDirectory = JSON.parse(req_data).mount_point
+			console.log("Mount dir: " + mountDirectory);
+			
+				console.log('mount params: ' + req_data);
+				// perform POST request
+				try {
+				const data = await requestAPI<any>('mount', {
+					'body': req_data,
+					'method': 'POST'});
+				console.log(data);
+				if("OK" == data.status) {
+					showDialog({ title: "OK", body: "Mount successful",
+								buttons: [ Dialog.okButton() ] });
+					// TODO: find a better/faster way to change directory
+					await fb.getListing().model.cd("/");
+					await fb.getListing().model.cd(mountDirectory);
+				}
+				else{
+					showErrorMessage("Error", data.error_info);
+				}
+				} catch (reason) {
+					console.error(`Error on POST /inhpc_dm/mount".\n${reason}`);
+					showErrorMessage("Error", reason);
+				}
+			
+			} else {
+				console.log('Mount cancelled');
+			}
 	    });
 	}
 } // end dm_MountButton
