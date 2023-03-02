@@ -359,7 +359,7 @@ export function activate_dm(
     };
   };*/
 
-  Promise.all([settingRegistry.load(extention_id), app.restored])
+  Promise.all([settingRegistry.load(extention_id), app.started])
     .then(([settings]) => {
       console.log("entering the promis, loading the settings ");
       updateDefaultSettings(settings);
