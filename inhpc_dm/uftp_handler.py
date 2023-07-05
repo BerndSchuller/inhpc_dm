@@ -1,3 +1,4 @@
+import argparse
 from base64 import b64encode
 from fuse import FUSE
 from os import environ, getenv
@@ -31,11 +32,6 @@ def _setup_credential(credentials):
                              identity = _identity)
 
 
-def create_uftp_handler(remote_directory):
-    """ creates a UFTP handler (not yet authenticated or connected) """
-    return UFTP(_setup_credential(credentials))
-
-
 def run_fusedriver(host, port, pwd, mount_point, debug=False):
     cmds = ["export PYTHONPATH=%s" % environ.get("PYTHONPATH", ""),
             "export UFTP_PASSWORD=%s" % pwd,
@@ -59,10 +55,12 @@ def _resolve_mount_point(directory, mount_info):
         return None
 
     
-def _create_command(host, port, pwd, method, sources, target):
+def _create_command(host, port, pwd, method, sources, target, rhost, rport, rpwd):
     cmd =  "export PYTHONPATH=%s\n" % environ.get("PYTHONPATH", "")
     cmd += "export UFTP_PASSWORD=%s\n" % pwd
-    cmd += "python3 -m inhpc_dm.uftp_handler %s:%s -X %s " %(host,port, method)
+    cmd += f"python3 -m inhpc_dm.uftp_handler {host}:{port} -X {method} "
+    if method=="RCP":
+        cmd += f"-R {rhost}:{rport}:{rpwd} "
     if len(sources)<1:
         raise ValueError("Need sources")
     cmd += "--sources "
@@ -88,29 +86,38 @@ def _relative_path(full, base):
 def prepare_data_move_operation(sources, target, mount_info):
     """ Create command to be executed for a data copy operation.
         Will resolve source/target endpoint, and determine what operation 
-        (GET or PUT) is needed.
+        (GET, PUT, RCP) is needed.
         Will authenticate with the stored credentials.
     """
     _target_mount = _resolve_mount_point(target, mount_info)
     _source_mount = _resolve_mount_point(sources[0], mount_info)
-    if _target_mount!=None:
+    _rcp_args = [None,None,None]
+    if _source_mount is None:
         _method = "PUT"
         _mount = _target_mount
         _sources = sources
-        _target = _relative_path(target, _mount["mount_point"])
-    else:
+        _target = _relative_path(target, _mount["mount_point"])+"/"
+    elif _target_mount is None:
         _method = "GET"
         _mount = _source_mount
         _target = target
         _sources = [ _relative_path(full, _mount["mount_point"]) for full in sources ]
-
+    else:
+        # remote copy - issue receive-file on target side
+        _method = "RCP"
+        _mount = _target_mount
+        _sources = [ _relative_path(full, _source_mount["mount_point"]) for full in sources ]
+        _target = _relative_path(target, _target_mount["mount_point"])+"/"
+        _rauth_url = _source_mount["endpoint"]
+        _rcredentials = _source_mount["credentials"]
+        _r_remote_dir = _source_mount["remote_directory"]
+        _rhost, _rport, _rpwd = UFTP().authenticate(_setup_credential(_rcredentials), _rauth_url, _r_remote_dir)
+        _rcp_args = [_rhost, _rport, _rpwd]
     _auth_url = _mount["endpoint"]
     _credentials = _mount["credentials"]
     _remote_dir = _mount["remote_directory"]
-    _uftp = create_uftp_handler(_remote_dir, _auth_url, _credentials)
-    _host, _port, _pwd = _uftp.authenticate()
-
-    return _create_command(_host, int(_port), _pwd, _method, _sources, _target)
+    _host, _port, _pwd = UFTP().authenticate(_setup_credential(_credentials), _auth_url, _remote_dir)
+    return _create_command(_host, int(_port), _pwd, _method, _sources, _target, *_rcp_args)
 
 def mount(mount_directory, parameters):
     """
@@ -147,18 +154,18 @@ def unmount(parameters):
     return error_code, output
 
 
-if __name__ == "__main__":
+def main():
     """ 
     Main function to run download or upload from UFTPD.
     Requires the one-time password from authentication, which must have been done previously
     """
-    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("address", help="UFTPD server's address (host:port)")
     parser.add_argument("-P", "--password",
-        help="one-time password (if not given, it is expected in the environment UFTP_PASSWORD)",
-    )
+                        help="one-time password (if not given, it is expected in the environment UFTP_PASSWORD)")
     parser.add_argument("-X", "--operation", required=True, help="what to do, GET or PUT")
+    parser.add_argument("-R", "--remote", required=False,
+                        help="Remote copy: host:port:password for accessing source file")
     parser.add_argument(
         "-s",
         "--sources",
@@ -177,7 +184,7 @@ if __name__ == "__main__":
     if _pwd is None:
         raise TypeError("UFTP one-time password must be given via --P or as environment UFTP_PASSWORD")
     _operation = args.operation
-    if "GET"!=_operation and "PUT"!=_operation:
+    if _operation not in ["GET", "PUT", "RCP"]:
         raise TypeError("Not understood: %s" % _operation)
 
     uftp_session = UFTP()
@@ -207,3 +214,14 @@ if __name__ == "__main__":
                 _write_to = _target
             with _source.open("rb") as fp:
                 uftp_session.ftp.storbinary('STOR %s' % str(_write_to), fp)
+    elif "RCP"==_operation:
+        if len(args.sources)>1:
+            raise ValueError("Can only remote copy one file")
+        _source = Path(args.sources[0])
+        _target = args.target
+        _rhost, _rport, _rpwd =  args.remote.split(":")
+        cmd = f"RECEIVE-FILE '{_target}/{_source.name}' '{_source}' '{_rhost}:{_rport}' '{_rpwd}'"
+        uftp_session.ftp.sendcmd(cmd)
+
+if __name__ == "__main__":
+    main()
