@@ -1,6 +1,6 @@
 {
   "name": "inhpc_dm",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Data Management for InHPC-DE",
   "keywords": [
     "jupyter",
@@ -22,7 +22,7 @@
       "email": "b.schuller@fz-juelich.de"
     },
     {
-       "name": "Myriam Czekala"
+      "name": "Myriam Czekala"
     }
   ],
   "files": [
@@ -56,14 +56,14 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-      "@jupyterlab/application": "^3.1.0",
-      "@jupyterlab/apputils": "^3.1.0",
-      "@jupyterlab/docmanager": "^3.1.0",
-      "@jupyterlab/filebrowser": "^3.1.0",
-      "@jupyterlab/ui-components": "^3.1.0"
+    "@jupyterlab/application": "^4.0.7",
+    "@jupyterlab/apputils": "^4.0.7",
+    "@jupyterlab/docmanager": "^4.0.7",
+    "@jupyterlab/filebrowser": "^4.0.7",
+    "@jupyterlab/ui-components": "^4.0.7"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.0.0",
+    "@jupyterlab/builder": "^4.0.7",
     "@types/node": "^17.0.21",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",

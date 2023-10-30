@@ -20,10 +20,10 @@ export class dm_FileBrowser extends FileBrowser {
     
     getSelectedDirectory(): string {
         var selected = this.listing.model.path;
-    	var item = this.listing.selectedItems().next().value
+    	var item = this.listing.selectedItems().next()
     	if(item){
-    	  if(item.type=='directory'){
-    	     selected = item.path;
+    	  if(item.value.type=='directory'){
+    	     selected = item.value.path;
     	  } 
 		}
         return selected;
