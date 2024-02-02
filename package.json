@@ -62,7 +62,7 @@
     "@jupyterlab/docmanager": "^4.0.7",
     "@jupyterlab/filebrowser": "^4.0.7",
     "@jupyterlab/services": "^4.0.7",
-    "@jupyterlab/settingsregistry": "^4.0.7",
+    "@jupyterlab/settingregistry": "^4.0.7",
     "@jupyterlab/ui-components": "^4.0.7",
     "@lumino/algorithms": "^2.0.1",
     "@lumino/messaging": "^2.0.1",
