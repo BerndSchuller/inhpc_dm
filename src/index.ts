@@ -18,22 +18,24 @@ import {
 import{ ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { activate_dm } from './dm_widget';
+import { IDocumentManager } from '@jupyterlab/docmanager';
 
 /**
  * Initialization data for the jupyterlab extensions
  */
 const extension: JupyterFrontEndPlugin<void> = {
-  id: '@jupyterlab/inhpc-extension:plugin',
+  id: 'inhpc_dm:plugin',
   autoStart: true,
-  requires: [ICommandPalette, ILayoutRestorer, ISettingRegistry],
+  requires: [ICommandPalette, ILayoutRestorer, ISettingRegistry, IDocumentManager],
   activate: (
     app: JupyterFrontEnd, 
     palette: ICommandPalette, 
     restorer: ILayoutRestorer,
-    settingReg: ISettingRegistry
+    settingReg: ISettingRegistry,
+    documentManager: IDocumentManager
 ) =>
   {
-    activate_dm(app, palette, restorer, settingReg, extension.id);
+    activate_dm(app, documentManager, palette, restorer, settingReg, extension.id);
   }
 };
 

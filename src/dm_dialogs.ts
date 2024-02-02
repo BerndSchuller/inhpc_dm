@@ -15,17 +15,17 @@ const INPUT_DIALOG_CLASS = 'jp-Input-Dialog';
  */
 class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
 
-  constructor(availableEndpoints: string[] = [], mountDirectory: string = "", defaultEndoint?: string) {
+  constructor(availableEndpoints: string[] = [], mountDirectory: string = "", defaultEndpoint?: string) {
     super();
     this.addClass(INPUT_DIALOG_CLASS);
 
     // editable list of endpoints
     this._list = document.createElement('select');
 
-    let current = '';
-    if(defaultEndoint!=undefined)
+    let current = defaultEndpoint;
+    if(defaultEndpoint!=undefined)
     {
-      current = defaultEndoint;
+      current = defaultEndpoint;
     }
     availableEndpoints.forEach((item, index) => {
         const option = document.createElement('option');

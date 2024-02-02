@@ -14,10 +14,6 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
-import { DocumentManager} from '@jupyterlab/docmanager';
-import { DocumentRegistry} from '@jupyterlab/docregistry';
-import { ServiceManager} from '@jupyterlab/services';
-
 import { each} from '@lumino/algorithm';
 import { Message} from '@lumino/messaging';
 
@@ -33,6 +29,7 @@ import {
   DirListing
 } from '@jupyterlab/filebrowser';
 
+import{ IDocumentManager } from '@jupyterlab/docmanager';
 import{ ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { dm_FileBrowser } from './mod_browser';
@@ -77,23 +74,47 @@ class ContentWidget extends Widget {
   }
 }//end contentWidget
 
+export class dm_Settings {
+
+  constructor() {}
+
+  getDefaultEndpoint(): string {
+    return this._settings["default_endpoint"];
+  }
+
+  setDefaultEndpoint(default_endpoint: string) {
+    this._settings["default_endpoint"] = default_endpoint;
+  }
+
+  getUFTPEndpoints(): string[] {
+    return this._settings["uftp_endpoints"];
+  }
+
+  private _settings = {
+    "uftp_endpoints": [
+      "https://localhost:9000/rest/auth/TEST",
+      "https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
+      "https://uftp.fz-juelich.de:9112/UFTP_Auth/rest/auth/JUDAC",
+      "https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
+    ],
+    "default_endpoint": ""
+    };
+
+
+}//end dm_Settings
+
 export class dmWidget extends Widget {
 
-  constructor(app: JupyterFrontEnd) {
+  constructor(app: JupyterFrontEnd, docManager: IDocumentManager) {
     super();
     this.addClass('my-dmWidget');
 
+    this._settings = new dm_Settings();
+  
 	// ============= Dual FileBrowser view ======================================
 	
     // left ("_l") and right ("_r") file browser panel each 
     // including browser and info panels
-    let docRegistry = new DocumentRegistry();
-    const servicemanager = new ServiceManager();
-    let docManager = new DocumentManager({
-      registry: docRegistry,
-      manager: servicemanager,
-      opener
-    });
     
     // ============= Left FileBrowser ======================================
     
@@ -108,7 +129,7 @@ export class dmWidget extends Widget {
     // TODO connect to 'click' signal for displaying / updating file info?
     //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
 
-    const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings["uftp_endpoints"]);
+    const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings);
     this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
     const tb_unmountbutton_l = new dm_UnmountButton(this._fbWidget_l);
     this._fbWidget_l.toolbar.addItem("unmountBtn", tb_unmountbutton_l);
@@ -116,7 +137,7 @@ export class dmWidget extends Widget {
     this._infoWidget_l = new ContentWidget('Info');
     this._infoWidget_l.id = "infoWidget_l";
     this._infoWidget_l.textareaNode.value= "<n/a>";
-	this._infoWidget_l.textareaNode.style.width="95%";
+	  this._infoWidget_l.textareaNode.style.width="95%";
 
     this._fbPanel_l = new SplitPanel({
       orientation: 'vertical',
@@ -139,7 +160,7 @@ export class dmWidget extends Widget {
     // connect to 'click' signal
     //this._fbWidget_r.getListing().clicked.connect(this.eventSignalHandler, this);
       
-    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings["uftp_endpoints"], this._defaultEndpoint);
+    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings);
     this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
 
     const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
@@ -268,7 +289,7 @@ export class dmWidget extends Widget {
   }
 
   setDefaultEndpoint(endpoint: string): void {
-    this._defaultEndpoint = endpoint;
+    this._settings.setDefaultEndpoint(endpoint);
   }
 
   private _fbWidget_l: dm_FileBrowser;
@@ -281,15 +302,7 @@ export class dmWidget extends Widget {
   private _fbPanel: BoxPanel;
   private _mainLayout: BoxLayout;
   private _panel_collection: SplitPanel;
-  private _settings = {
-	"uftp_endpoints": [
-	    "https://localhost:9000/rest/auth/TEST",
-		"https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
-		"https://uftp.fz-juelich.de:9112/UFTP_Auth/rest/auth/JUDAC",
-		"https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
-	]
-  };
-  private _defaultEndpoint: string;
+  private _settings: dm_Settings;
 
 }// end class dmWidget
 
@@ -297,25 +310,25 @@ export class dmWidget extends Widget {
 * Activate the Data Management widget extension
 */
 export function activate_dm(
-  app: JupyterFrontEnd, 
+  app: JupyterFrontEnd,
+  documentManager: IDocumentManager, 
   palette: ICommandPalette, 
   restorer: ILayoutRestorer, 
   settingRegistry: ISettingRegistry,
-  extention_id: string
+  extension_id: string
   ) {
 
   console.log('JupyterLab extension InHPC data management activating.');
 
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
-  const dmwidget = new dmWidget(app);
+  const dmwidget = new dmWidget(app, documentManager);
   app.commands.addCommand(command_dm, {
     label: 'InHPC - Data Management dual browser view',
     execute: () => {      
       if (! widget_dm || widget_dm.isDisposed) {
 		// Create a new widget if one does not exist
-        //const dmwidget = new dmWidget(app);
-		    dmwidget.id = 'dmwidget_id';
+        dmwidget.id = 'dmwidget_id';
         widget_dm = new MainAreaWidget({ content: dmwidget });
         widget_dm.id = 'inhpc-datamanagement';
         widget_dm.title.label = 'Data Management';
@@ -351,24 +364,17 @@ export function activate_dm(
     console.log("Settings are: " + defHostSetting);
     dmwidget.setDefaultEndpoint(defHostSetting);
   }
-/*
-  const updateSettings = (settings: ISettingRegistry.ISettings): void => {
-    item.model!.config ={
-      ...CodeEditor.defaultConfig,
-      ...(settings.get('editorConfig').composite as JSONObject)
-    };
-  };*/
 
-  Promise.all([settingRegistry.load(extention_id), app.started])
+  Promise.all([settingRegistry.load(extension_id), app.started])
     .then(([settings]) => {
-      console.log("entering the promis, loading the settings ");
+      console.log("Loading InHPC_dm settings.");
       updateDefaultSettings(settings);
       settings.changed.connect(() => {
       updateDefaultSettings(settings);
       });
     })
     .catch((reason: Error) => {
-      console.error("Problem with Settings: " + reason.message);
+      console.error("Problem with InHPC_dm settings: " + reason.message);
     }
   );
   

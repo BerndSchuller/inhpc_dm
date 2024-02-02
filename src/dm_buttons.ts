@@ -12,6 +12,8 @@ import {
   
   import { dm_FileBrowser } from './mod_browser';
   
+  import { dm_Settings } from './dm_widget';
+  
   import { requestAPI } from './dm_handler';
   
   import { getMountInfo } from './dm_dialogs';
@@ -23,18 +25,18 @@ import {
  */
 export class dm_MountButton extends ToolbarButton {
 
-	constructor(fb: dm_FileBrowser, endpoints: string[], defaultEndpoint?: string){
+	constructor(fb: dm_FileBrowser, _settings: dm_Settings){
 		super( {
           icon: addIcon,
 	      tooltip: 'Mount remote filesystem via UFTP',
-	      onClick: () => { this.handle_click(fb, endpoints, defaultEndpoint); }
+	      onClick: () => { this.handle_click(fb, _settings); }
 	    });
 	}
 	
-	handle_click(fb: dm_FileBrowser, endpoints: string[], defaultEndpoint?: string){
+	handle_click(fb: dm_FileBrowser, _settings: dm_Settings){
 	    console.log(this);
         var selectedDirectory = fb.getSelectedDirectory();
-        getMountInfo(endpoints, selectedDirectory, defaultEndpoint).then(async value => {
+        getMountInfo(_settings.getUFTPEndpoints(), selectedDirectory, _settings.getDefaultEndpoint()).then(async value => {
           var req_data = JSON.stringify(value.value);
 		  if(req_data!="null") {
 			// final mount directory from dialog result
@@ -60,7 +62,7 @@ export class dm_MountButton extends ToolbarButton {
 				}
 				} catch (reason) {
 					console.error(`Error on POST /inhpc_dm/mount".\n${reason}`);
-					showErrorMessage("Error", reason);
+					showErrorMessage("Error", "${reason}");
 				}
 			
 			} else {
@@ -107,7 +109,7 @@ export class dm_UnmountButton extends ToolbarButton {
 	      }
       	} catch (reason) {
       	    console.error(`Error on POST /inhpc_dm/unmount".\n${reason}`);
-      	    showErrorMessage("Error", reason);
+      	    showErrorMessage("Error", "${reason}");
     	}
 	}
 } // end dm_UnmountButton
@@ -153,7 +155,7 @@ export class dm_CopyButton extends ToolbarButton {
 	      }
       	} catch (reason) {
       	    console.error(`Error on POST /inhpc_dm/tasks".\n${reason}`);
-      	    showErrorMessage("Error", reason);
+      	    showErrorMessage("Error", "${reason}");
     	}
 	}
 } // end dm_CopyButton

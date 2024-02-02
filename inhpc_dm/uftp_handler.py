@@ -1,14 +1,10 @@
 import argparse
-from base64 import b64encode
 from fuse import FUSE
 from os import environ, getenv
 from pathlib import Path, PosixPath, PurePosixPath
-from pyunicore.client import Transport
 from pyunicore.credentials import create_credential
 from pyunicore.uftp import UFTP
-from pyunicore.uftpfuse import UFTPDriver
 
-from stat import S_ISDIR
 import subprocess
 
 
