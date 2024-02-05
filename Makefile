@@ -8,3 +8,8 @@ update:
 
 clean:
 	@find -name "*~" -delete
+
+purge-node-js-stuff: clean
+	@rm -rf node_modules/*
+	@rm yarn.lock
+

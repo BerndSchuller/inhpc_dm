@@ -70,7 +70,7 @@ setup_args = dict(
     cmdclass=cmdclass,
     packages=setuptools.find_packages(),
     install_requires=[
-        "jupyterlab~=3.0",
+        "jupyterlab>=4.0",
         "fusepy~=3.0.1",
         "pyunicore>=0.15.0"
     ],

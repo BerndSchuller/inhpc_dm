@@ -1,18 +1,17 @@
 {
-    "title": "InhpcMount",
-    "description": "InhpcMount settings.",
+    "title": "InHPC Datamanagement",
+    "description": "Settings for the InHPC Datamanagement extension.",
     "type":"object",
     "properties": {
       "defaultHost": {
-        "title": "Default mount endpoint",
-        "description": "The default endpoint for the UFTP mount",
+        "title": "Default UFTP endpoint",
+        "description": "The default UFTP endpoint",
         "type":"string",
-        "enum":[" ", 
-        "https://localhost:9000/rest/auth/TEST",
+        "enum":["https://localhost:9000/rest/auth/TEST",
         "https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
         "https://uftp.fz-juelich.de:9112/UFTP_Auth/rest/auth/JUDAC",
         "https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"],
-        "default": " "
+        "default": "https://localhost:9000/rest/auth/TEST"
       }      
     }
   }
