@@ -7,7 +7,7 @@ import {
   
   import { 
     addIcon,
-    clearIcon,
+    clearIcon
   } from '@jupyterlab/ui-components';
   
   import { dm_FileBrowser } from './mod_browser';

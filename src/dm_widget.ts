@@ -14,8 +14,7 @@ import {
   WidgetTracker
 } from '@jupyterlab/apputils';
 
-import { each} from '@lumino/algorithm';
-import { Message} from '@lumino/messaging';
+import { ILauncher } from '@jupyterlab/launcher';
 
 import {
   BoxPanel,
@@ -31,6 +30,12 @@ import {
 
 import{ IDocumentManager } from '@jupyterlab/docmanager';
 import{ ISettingRegistry } from '@jupyterlab/settingregistry';
+
+import { folderIcon } from '@jupyterlab/ui-components';
+
+
+import { each} from '@lumino/algorithm';
+import { Message} from '@lumino/messaging';
 
 import { dm_FileBrowser } from './mod_browser';
 
@@ -315,6 +320,7 @@ export function activate_dm(
   palette: ICommandPalette, 
   restorer: ILayoutRestorer, 
   settingRegistry: ISettingRegistry,
+  launcher: ILauncher | null,
   extension_id: string
   ) {
 
@@ -323,8 +329,10 @@ export function activate_dm(
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
   const dmwidget = new dmWidget(app, documentManager);
-  app.commands.addCommand(command_dm, {
+
+  let cmd = {
     label: 'InHPC - Data Management dual browser view',
+    icon: folderIcon,
     execute: () => {      
       if (! widget_dm || widget_dm.isDisposed) {
 		// Create a new widget if one does not exist
@@ -346,8 +354,18 @@ export function activate_dm(
 
       app.shell.activateById(widget_dm.id);
     }
-  });
-  palette.addItem({ command: command_dm, category: 'Tutorial' });
+  };
+  app.commands.addCommand(command_dm, cmd);
+
+  palette.addItem({ command: command_dm, category: 'Other' });
+
+  // add to launcher
+  if (launcher) {
+    launcher.add({
+      command: command_dm,
+      category: 'Other'
+    });
+  }
 
   // Track and restore the widget state
   let tracker_dm = new WidgetTracker<MainAreaWidget<dmWidget>>({
