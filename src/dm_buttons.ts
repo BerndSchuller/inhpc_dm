@@ -17,8 +17,6 @@ import {
   import { requestAPI } from './dm_handler';
   
   import { getMountInfo } from './dm_dialogs';
-  
-  import { each} from '@lumino/algorithm';
 
 /**
  * Button for mounting remote FS
@@ -131,9 +129,9 @@ export class dm_CopyButton extends ToolbarButton {
 	    var _action = "copy";
 	    var _target_dir = target.getSelectedDirectory();
 	    var _sources: string[] = []
-	    each(source.getListing().selectedItems(), item => {
-		      _sources.push(item.path)
-        });
+	    for (const item of source.getListing().selectedItems()) {
+			_sources.push(item.path);
+		};
 		var req_data = JSON.stringify({
 						"command": _action,
 		                "parameters": { 
