@@ -1,6 +1,8 @@
 *~
 lib/
 node_modules/
+yarn.lock
+.yarn/
 
 inhpc_dm.egg-info/
 .ipynb_checkpoints/
