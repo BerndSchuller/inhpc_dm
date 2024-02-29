@@ -1,9 +1,3 @@
-.my-apodWidget {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: visible;
-}
 .dm_Widget-main *{
   overflow: visible;
 }

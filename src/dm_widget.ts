@@ -33,8 +33,6 @@ import{ ISettingRegistry } from '@jupyterlab/settingregistry';
 
 import { folderIcon } from '@jupyterlab/ui-components';
 
-
-import { each} from '@lumino/algorithm';
 import { Message} from '@lumino/messaging';
 
 import { dm_FileBrowser } from './mod_browser';
@@ -263,25 +261,24 @@ export class dmWidget extends Widget {
         //left FB
         var text = "Selected Files Info";
         var size_sum = 0;
-        each(this._fbWidget_l.getListing().selectedItems(), item => {
+        for (const item of this._fbWidget_l.getListing().selectedItems()) {
           if (item.size) 
             size_sum = size_sum + item.size;
           if (item.size) 
             text=text  + "\n" + item.path + "(" + this.formatBytes(item.size) + ")";
-        });
+        };
         
         text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
         
         //right FB
         text = "Selected Files Info";
         size_sum = 0;
-        
-        each(this._fbWidget_r.getListing().selectedItems(), item => {
+        for (const item of this._fbWidget_r.getListing().selectedItems()) {
           if (item.size) 
             size_sum = size_sum + item.size;
           if (item.size) 
             text=text  + "\n" + item.path + "(" + this.formatBytes(item.size) + ")";
-        });
+        };
       
         text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
       

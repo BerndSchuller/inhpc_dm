@@ -1,5 +1,3 @@
-
-
 update:
 	pip uninstall --yes inhpc_dm
 	pip install .
@@ -12,4 +10,3 @@ clean:
 purge-node-js-stuff: clean
 	@rm -rf node_modules/*
 	@rm yarn.lock
-
