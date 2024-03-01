@@ -73,7 +73,8 @@ setup_args = dict(
         "jupyterlab>=4.0",
         "notebook<7",
         "fusepy~=3.0.1",
-        "pyunicore[crypto]>=0.15.0"
+        "pyunicore[crypto]>=0.15.0",
+        "brypt>=4.0.0"
     ],
     zip_safe=False,
     include_package_data=True,
