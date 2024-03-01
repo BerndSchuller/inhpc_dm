@@ -74,7 +74,7 @@ setup_args = dict(
         "notebook<7",
         "fusepy~=3.0.1",
         "pyunicore[crypto]>=0.15.0",
-        "brypt>=4.0.0"
+        "bcrypt>=4.0.0"
     ],
     zip_safe=False,
     include_package_data=True,
