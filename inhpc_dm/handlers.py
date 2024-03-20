@@ -3,8 +3,8 @@ import json
 
 from pathlib import Path
 
-from notebook.base.handlers import APIHandler
-from notebook.utils import url_path_join
+from jupyter_server.base.handlers import JupyterHandler
+from jupyter_server.utils import url_path_join
 
 from subprocess import Popen
 import tornado
@@ -14,7 +14,7 @@ import inhpc_dm.uftp_handler as uftp_handler
 import inhpc_dm.tasks as tasks
 
 
-class AbstractDMHandler(APIHandler):
+class AbstractDMHandler(JupyterHandler):
     """ Abstract base class for dm-tool handlers """
     
     def _get_settings_path(self):

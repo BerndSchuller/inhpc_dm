@@ -1,5 +1,4 @@
 import argparse
-from fuse import FUSE
 from os import environ, getenv
 from pathlib import Path, PosixPath, PurePosixPath
 from pyunicore.credentials import create_credential

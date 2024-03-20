@@ -71,7 +71,6 @@ setup_args = dict(
     packages=setuptools.find_packages(),
     install_requires=[
         "jupyterlab>=4.0",
-        "notebook<7",
         "fusepy~=3.0.1",
         "pyunicore[crypto]>=0.15.0",
         "bcrypt>=4.0.0"
