@@ -211,17 +211,23 @@ class TaskHandler(AbstractDMHandler):
         target = args["target"]
         if len(target)==0:
             target = "."
+        if len(sources)==0:
+            raise ValueError("No source(s) specified!")
         mount_info = self.read_mount_info()
+        result_data = {}
         id_1, target_mount = self.resolve_mount_point(target, mount_info)
         id_2, source_mount = self.resolve_mount_point(sources[0], mount_info)
         if id_1==None and id_2==None:
-            raise ValueError("Neither source nor target are remote")
-        cmd = uftp_handler.prepare_data_move_operation(sources, target, mount_info)
-        self.log.info("Running: %s" % cmd)
-        task = tasks.Task(cmd)
-        task.launch()
-        self.application.dm_task_holder.add(task)
-        result_data = { "status": "OK" }
+            result_data["status"] = "ERROR"
+            result_data["exit_code"] = 1
+            result_data["error_info"] = "Neither source nor target are remote";
+        else:
+            cmd = uftp_handler.prepare_data_move_operation(sources, target, mount_info)
+            self.log.info("Running: %s" % cmd)
+            task = tasks.Task(cmd, str(sources), str(target))
+            task.launch()
+            self.application.dm_task_holder.add(task)
+            result_data = { "status": "OK" }
         self.finish(json.dumps(result_data))
 
 class InfoHandler(AbstractDMHandler):

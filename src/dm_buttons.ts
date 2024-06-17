@@ -5,18 +5,20 @@ import {
     showErrorMessage
   } from '@jupyterlab/apputils';
   
-  import { 
+import { 
     addIcon,
     clearIcon
   } from '@jupyterlab/ui-components';
   
-  import { dm_FileBrowser } from './mod_browser';
-  
-  import { dm_Settings } from './dm_widget';
-  
-  import { requestAPI } from './dm_handler';
-  
-  import { getMountInfo } from './dm_dialogs';
+import { dm_FileBrowser } from './mod_browser';
+
+import { dm_Settings } from './dm_widget';
+
+import { requestAPI } from './dm_handler';
+
+import { getMountInfo } from './dm_dialogs';
+
+import { dm_TransferList } from './dm_transferlist';
 
 /**
  * Button for mounting remote FS
@@ -60,7 +62,7 @@ export class dm_MountButton extends ToolbarButton {
 				}
 				} catch (reason) {
 					console.error(`Error on POST /inhpc_dm/mount".\n${reason}`);
-					showErrorMessage("Error", "${reason}");
+					showErrorMessage("Error", `${reason}`);
 				}
 			
 			} else {
@@ -107,7 +109,7 @@ export class dm_UnmountButton extends ToolbarButton {
 	      }
       	} catch (reason) {
       	    console.error(`Error on POST /inhpc_dm/unmount".\n${reason}`);
-      	    showErrorMessage("Error", "${reason}");
+      	    showErrorMessage("Error", `${reason}`);
     	}
 	}
 } // end dm_UnmountButton
@@ -117,21 +119,25 @@ export class dm_UnmountButton extends ToolbarButton {
  */
 export class dm_CopyButton extends ToolbarButton {
 
-	constructor(source: dm_FileBrowser, target: dm_FileBrowser, label: string, tooltip: string){
+	constructor(source: dm_FileBrowser, target: dm_FileBrowser, monitor: dm_TransferList, label: string, tooltip: string){
 		super( {
           label: label,
 	      tooltip: tooltip,
-	      onClick: () => { this.handle_click(source, target); }
+	      onClick: () => { this.handle_click(source, target, monitor); }
 	    });
 	}
 	
-	async handle_click(source: dm_FileBrowser, target: dm_FileBrowser){
+	async handle_click(source: dm_FileBrowser, target: dm_FileBrowser, monitor: dm_TransferList){
 	    var _action = "copy";
 	    var _target_dir = target.getSelectedDirectory();
 	    var _sources: string[] = []
 	    for (const item of source.getListing().selectedItems()) {
 			_sources.push(item.path);
 		};
+		if(_sources.length ==0){
+			showErrorMessage("Error", "Please select source file(s)");
+			return
+		}
 		var req_data = JSON.stringify({
 						"command": _action,
 		                "parameters": { 
@@ -147,13 +153,32 @@ export class dm_CopyButton extends ToolbarButton {
       	  if("OK" == data.status) {
       	    showDialog({ title: "OK", body: "Task launched successfully",
       	 	             buttons: [ Dialog.okButton() ] });
+			monitor.refreshData();
       	  }
       	  else{
 	        showErrorMessage("Error", data.error_info);
 	      }
       	} catch (reason) {
       	    console.error(`Error on POST /inhpc_dm/tasks".\n${reason}`);
-      	    showErrorMessage("Error", "${reason}");
+      	    showErrorMessage("Error", `${reason}`);
     	}
+	}
+} // end dm_CopyButton
+
+/**
+ * Button for refreshing the list of transfer tasks
+ */
+export class dm_RefreshButton extends ToolbarButton {
+
+	constructor(transferlist: dm_TransferList, label:string, tooltip:string){
+		super( {
+          label: label,
+	      tooltip: tooltip,
+	      onClick: () => { this.handle_click(transferlist); }
+	    });
+	}
+	
+	async handle_click(transferlist: dm_TransferList){
+	    transferlist.refreshData();
 	}
 } // end dm_CopyButton

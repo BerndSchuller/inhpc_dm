@@ -5,7 +5,7 @@
 
 import {
   ILayoutRestorer,
-  JupyterFrontEnd,
+  JupyterFrontEnd
 } from '@jupyterlab/application';
 
 import {
@@ -19,63 +19,31 @@ import { ILauncher } from '@jupyterlab/launcher';
 import {
   BoxPanel,
   BoxLayout,
+  DockPanel,
   SplitPanel,
   Widget
 } from '@lumino/widgets';
 
 import { 
-  FilterFileBrowserModel,
-  DirListing
+  FilterFileBrowserModel
 } from '@jupyterlab/filebrowser';
 
 import{ IDocumentManager } from '@jupyterlab/docmanager';
 import{ ISettingRegistry } from '@jupyterlab/settingregistry';
-
 import { folderIcon } from '@jupyterlab/ui-components';
-
-import { Message} from '@lumino/messaging';
 
 import { dm_FileBrowser } from './mod_browser';
 
+import {
+  dm_TransferList
+} from './dm_transferlist';
+
 import { 
-  dm_MountButton,
   dm_CopyButton,
+  dm_RefreshButton,
+  dm_MountButton,
   dm_UnmountButton
 } from './dm_buttons';
-
-
-class ContentWidget extends Widget {
-
-  static createNode(): HTMLElement {
-    let node = document.createElement('div');
-    let content = document.createElement('div');
-    let input = document.createElement('textarea');
-    input.placeholder = 'Placeholder...';
-    content.appendChild(input);
-    node.appendChild(content);
-    return node;
-  }
-
-  constructor(name: string) {
-    super({ node: ContentWidget.createNode() });
-    this.setFlag(Widget.Flag.DisallowLayout);
-    this.addClass('content');
-    this.addClass(name.toLowerCase());
-    this.title.label = name;
-    this.title.closable = true;
-    this.title.caption = `Long description for: ${name}`;
-  }
-
-  get textareaNode(): HTMLTextAreaElement {
-    return this.node.getElementsByTagName('textarea')[0] as HTMLTextAreaElement;
-  }
-
-  protected onActivateRequest(msg: Message): void {
-    if (this.isAttached) {
-      this.textareaNode.focus();
-    }
-  }
-}//end contentWidget
 
 export class dm_Settings {
 
@@ -129,18 +97,10 @@ export class dmWidget extends Widget {
       'Filebrowser left'
     );
 
-    // TODO connect to 'click' signal for displaying / updating file info?
-    //this._fbWidget_l.listing.clicked.connect(this.eventSignalHandler, this);
-
     const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings);
     this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
     const tb_unmountbutton_l = new dm_UnmountButton(this._fbWidget_l);
     this._fbWidget_l.toolbar.addItem("unmountBtn", tb_unmountbutton_l);
-
-    this._infoWidget_l = new ContentWidget('Info');
-    this._infoWidget_l.id = "infoWidget_l";
-    this._infoWidget_l.textareaNode.value= "<n/a>";
-	  this._infoWidget_l.textareaNode.style.width="95%";
 
     this._fbPanel_l = new SplitPanel({
       orientation: 'vertical',
@@ -148,7 +108,6 @@ export class dmWidget extends Widget {
     });
     this._fbPanel_l.id = 'fb_panel_l';
     this._fbPanel_l.addWidget(this._fbWidget_l);
-    this._fbPanel_l.addWidget(this._infoWidget_l);
     this._fbPanel_l.setRelativeSizes([90, 10]);
 
     // ============= Right FileBrowser ======================================
@@ -160,8 +119,6 @@ export class dmWidget extends Widget {
         model: fbModel_r}, 
       'Filebrowser right'
     );	
-    // connect to 'click' signal
-    //this._fbWidget_r.getListing().clicked.connect(this.eventSignalHandler, this);
       
     const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings);
     this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
@@ -169,10 +126,7 @@ export class dmWidget extends Widget {
     const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
     this._fbWidget_r.toolbar.addItem("unmountBtn", tb_unmountbutton_r);
 
-    this._infoWidget_r = new ContentWidget('Info');
-    this._infoWidget_r.id = "infoWidget_r";
-    this._infoWidget_r.textareaNode.value= "<n/a>";
-	this._infoWidget_r.textareaNode.style.width="95%";
+    this._transferListWidget = new dm_TransferList();
 
     this._fbPanel_r = new SplitPanel({
       orientation: 'vertical',
@@ -180,16 +134,14 @@ export class dmWidget extends Widget {
     });
     this._fbPanel_r.id = 'fb_panel_r';
     this._fbPanel_r.addWidget(this._fbWidget_r);
-    this._fbPanel_r.addWidget(this._infoWidget_r);
     this._fbPanel_r.setRelativeSizes([90, 10]);
 
-    
     // ============= Middle panel with copy buttons =====================================
     
-    const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r,
+    const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r, this._transferListWidget,
         '-->', 'Copy left selected to right directory directly');
 
-	  const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l,
+	  const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l, this._transferListWidget,
         '<--', 'Copy right selected to left directory directly');
 
     this._transferBoxPanel = new BoxPanel({
@@ -214,15 +166,33 @@ export class dmWidget extends Widget {
     this._fbPanel.addWidget(this._transferBoxPanel);
     this._fbPanel.addWidget(this._fbPanel_r);
 
+
+    // ======== Table with info about tasks / transfers ===========
+
+    let _wrapper1 = new BoxPanel({
+      direction: 'left-to-right',
+      spacing: 1
+    });
+    _wrapper1.title.label = "Transfers";
+    _wrapper1.addWidget(this._transferListWidget);
+    const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "refresh", "Refresh list of transfers");
+    _wrapper1.addWidget(refresh_transferlist_button);
+
+    let _wrapper = new DockPanel();
+    _wrapper.addWidget(_wrapper1);
+
     // ======== Main panel =====================
     this._mainLayout = (this.layout = new BoxLayout());
     
     this._panel_collection = new SplitPanel({
-          orientation: 'vertical'
+          orientation: 'vertical',
+          spacing: 10,
+          alignment: "center"
     });
     this._panel_collection.id = 'panel_collection';
     this._panel_collection.addWidget(this._fbPanel);
-    this._panel_collection.setRelativeSizes([10, 80, 10]);
+    this._panel_collection.addWidget(_wrapper);
+    this._panel_collection.setRelativeSizes([80, 10]);
     
     this._mainLayout.addWidget(this._panel_collection);	
 
@@ -246,62 +216,18 @@ export class dmWidget extends Widget {
 	  console.log(Object.getOwnPropertyNames(obj).sort());
   }
 
-  /**
-  *	Handle signals / clicki events
-  *
-  * TODO is such a handler even needed/useful for anything? 
-  * If yes, it should be linked to a specific file browser instance
-  * Show info about clicked element (ex. mounted or local file) in the boxes below
-  */
-  eventSignalHandler(sender: DirListing, eventType: string): void {
-
-    if (sender.constructor.name === 'DirListing') {
-      if (eventType === 'click') {
-
-        //left FB
-        var text = "Selected Files Info";
-        var size_sum = 0;
-        for (const item of this._fbWidget_l.getListing().selectedItems()) {
-          if (item.size) 
-            size_sum = size_sum + item.size;
-          if (item.size) 
-            text=text  + "\n" + item.path + "(" + this.formatBytes(item.size) + ")";
-        };
-        
-        text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
-        
-        //right FB
-        text = "Selected Files Info";
-        size_sum = 0;
-        for (const item of this._fbWidget_r.getListing().selectedItems()) {
-          if (item.size) 
-            size_sum = size_sum + item.size;
-          if (item.size) 
-            text=text  + "\n" + item.path + "(" + this.formatBytes(item.size) + ")";
-        };
-      
-        text=text  + "\n" + "Overall Size: " + this.formatBytes(size_sum);
-      
-      } else {
-              console.log('Unknown in DirListing: ', eventType);
-      }
-    } else {
-      console.log('Unknown event sender: ', sender.constructor.name);
-    }
-  }
-
   setDefaultEndpoint(endpoint: string): void {
     this._settings.setDefaultEndpoint(endpoint);
   }
 
   private _fbWidget_l: dm_FileBrowser;
-  private _infoWidget_l: ContentWidget;
   private _fbPanel_l: SplitPanel;
   private _fbWidget_r: dm_FileBrowser;
-  private _infoWidget_r: ContentWidget;
   private _fbPanel_r: SplitPanel;
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
+  private _transferListWidget: dm_TransferList;
+  
   private _mainLayout: BoxLayout;
   private _panel_collection: SplitPanel;
   private _settings: dm_Settings;

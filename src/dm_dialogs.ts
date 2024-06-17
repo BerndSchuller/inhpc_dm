@@ -27,7 +27,7 @@ class MountDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     {
       current = defaultEndpoint;
     }
-    availableEndpoints.forEach((item, index) => {
+    availableEndpoints.forEach((item, _) => {
         const option = document.createElement('option');
         option.value = item;
         option.textContent = item;

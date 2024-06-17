@@ -56,20 +56,21 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyterlab/application": "^4.0.7",
-    "@jupyterlab/apputils": "^4.0.7",
-    "@jupyterlab/coreutils": "^4.0.7",
-    "@jupyterlab/docmanager": "^4.0.7",
-    "@jupyterlab/filebrowser": "^4.0.7",
-    "@jupyterlab/launcher": "^4.0.7",
-    "@jupyterlab/services": "^4.0.7",
-    "@jupyterlab/settingregistry": "^4.0.7",
-    "@jupyterlab/ui-components": "^4.0.7",
+    "@jupyterlab/application": "^4.2.0",
+    "@jupyterlab/apputils": "^4.2.0",
+    "@jupyterlab/coreutils": "^4.2.0",
+    "@jupyterlab/docmanager": "^4.2.0",
+    "@jupyterlab/filebrowser": "^4.2.0",
+    "@jupyterlab/launcher": "^4.2.0",
+    "@jupyterlab/services": "^4.2.0",
+    "@jupyterlab/settingregistry": "^4.2.0",
+    "@jupyterlab/ui-components": "^4.2.0",
+    "@lumino/datagrid": "^2.3.1",
     "@lumino/messaging": "^2.0.1",
-    "@lumino/widgets": "^2.0.1"
+    "@lumino/widgets": "^2.3.2"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^4.0.7",
+    "@jupyterlab/builder": "^4.2.0",
     "@types/node": "^18.17.1",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
