@@ -65,7 +65,7 @@ export class dm_Settings {
     "uftp_endpoints": [
       "https://localhost:9000/rest/auth/TEST",
       "https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
-      "https://uftp.fz-juelich.de:9112/UFTP_Auth/rest/auth/JUDAC",
+      "https://uftp.fz-juelich.de/UFTP_Auth/rest/auth/JUDAC",
       "https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
     ],
     "default_endpoint": ""
@@ -169,15 +169,16 @@ export class dmWidget extends Widget {
 
     // ======== Table with info about tasks / transfers ===========
 
-    let _wrapper1 = new BoxPanel({
-      direction: 'left-to-right',
-      spacing: 1
+    let _wrapper1 = new SplitPanel({
+      orientation: 'horizontal',
+      spacing: 1,
+
     });
     _wrapper1.title.label = "Transfers";
     _wrapper1.addWidget(this._transferListWidget);
     const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "refresh", "Refresh list of transfers");
     _wrapper1.addWidget(refresh_transferlist_button);
-
+    _wrapper1.setRelativeSizes([80,20]);
     let _wrapper = new DockPanel();
     _wrapper.addWidget(_wrapper1);
 

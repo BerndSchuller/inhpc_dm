@@ -2,7 +2,7 @@ import argparse
 from os import environ, getenv
 from pathlib import Path, PosixPath, PurePosixPath
 from pyunicore.credentials import create_credential
-from pyunicore.uftp import UFTP
+from pyunicore.uftp.uftp import UFTP
 
 import subprocess
 
@@ -30,7 +30,7 @@ def _setup_credential(credentials):
 def run_fusedriver(host, port, pwd, mount_point, debug=False):
     cmds = ["export PYTHONPATH=%s" % environ.get("PYTHONPATH", ""),
             "export UFTP_PASSWORD=%s" % pwd,
-            "python3 -m pyunicore.uftpfuse %s:%s '%s'" % (host, port, mount_point)]
+            "python3 -m pyunicore.uftp.uftpfuse %s:%s '%s'" % (host, port, mount_point)]
     cmd = ""
     for c in cmds:
         cmd += c + u"\n"

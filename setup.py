@@ -72,7 +72,7 @@ setup_args = dict(
     install_requires=[
         "jupyterlab>=4.0",
         "fusepy~=3.0.1",
-        "pyunicore[crypto]>=0.15.0",
+        "pyunicore[crypto]>=1.1.1",
         "bcrypt>=4.0.0"
     ],
     zip_safe=False,
