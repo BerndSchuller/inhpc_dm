@@ -1,6 +1,7 @@
 *~
 lib/
 node_modules/
+jupyter-fs/
 yarn.lock
 .yarn/
 

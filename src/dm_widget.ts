@@ -24,26 +24,24 @@ import {
   Widget
 } from '@lumino/widgets';
 
-import { 
-  FilterFileBrowserModel
-} from '@jupyterlab/filebrowser';
-
 import{ IDocumentManager } from '@jupyterlab/docmanager';
 import{ ISettingRegistry } from '@jupyterlab/settingregistry';
 import { folderIcon } from '@jupyterlab/ui-components';
-
-import { dm_FileBrowser } from './mod_browser';
 
 import {
   dm_TransferList
 } from './dm_transferlist';
 
 import { 
-  dm_CopyButton,
+  // dm_CopyButton,
+  // dm_MountButton,
+  // dm_UnmountButton,
   dm_RefreshButton,
-  dm_MountButton,
-  dm_UnmountButton
 } from './dm_buttons';
+
+import {
+  dm_FileTree
+} from './dm_filetree';
 
 export class dm_Settings {
 
@@ -89,18 +87,14 @@ export class dmWidget extends Widget {
     
     // ============= Left FileBrowser ======================================
     
-    let fbModel_l = new FilterFileBrowserModel({ manager: docManager });
-
-    this._fbWidget_l = new dm_FileBrowser({
-        id: 'filebrowser-left',
-        model: fbModel_l},
-      'Filebrowser left'
-    );
-
-    const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings);
-    this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
-    const tb_unmountbutton_l = new dm_UnmountButton(this._fbWidget_l);
-    this._fbWidget_l.toolbar.addItem("unmountBtn", tb_unmountbutton_l);
+    let url_l = "uftp://demouser:test123@localhost:9000/rest/auth/TEST:";
+    this._fbWidget_l = new dm_FileTree(app, url_l);
+    
+    // TODO buttons / actions
+    //const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings);
+    //this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
+    //const tb_unmountbutton_l = new dm_UnmountButton(this._fbWidget_l);
+    //this._fbWidget_l.toolbar.addItem("unmountBtn", tb_unmountbutton_l);
 
     this._fbPanel_l = new SplitPanel({
       orientation: 'vertical',
@@ -111,20 +105,14 @@ export class dmWidget extends Widget {
     this._fbPanel_l.setRelativeSizes([90, 10]);
 
     // ============= Right FileBrowser ======================================
+    let url_r = "uftp://demouser:test123@localhost:9000/rest/auth/TEST:";
+    this._fbWidget_r = new dm_FileTree(app, url_r);
     
-    let fbModel_r = new FilterFileBrowserModel({ manager: docManager });
-
-    this._fbWidget_r = new dm_FileBrowser({
-        id: 'filebrowser-right',
-        model: fbModel_r}, 
-      'Filebrowser right'
-    );	
-      
-    const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings);
-    this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
-
-    const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
-    this._fbWidget_r.toolbar.addItem("unmountBtn", tb_unmountbutton_r);
+    // TODO buttons / actions
+    //const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings);
+    //this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
+    //const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
+    //this._fbWidget_r.toolbar.addItem("unmountBtn", tb_unmountbutton_r);
 
     this._transferListWidget = new dm_TransferList();
 
@@ -137,12 +125,6 @@ export class dmWidget extends Widget {
     this._fbPanel_r.setRelativeSizes([90, 10]);
 
     // ============= Middle panel with copy buttons =====================================
-    
-    const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r, this._transferListWidget,
-        '-->', 'Copy left selected to right directory directly');
-
-	  const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l, this._transferListWidget,
-        '<--', 'Copy right selected to left directory directly');
 
     this._transferBoxPanel = new BoxPanel({
       direction: 'top-to-bottom'
@@ -151,8 +133,14 @@ export class dmWidget extends Widget {
     this._transferBoxPanel.node.style.maxWidth="100px";
     this._transferBoxPanel.node.style.maxHeight="100px";
     this._transferBoxPanel.node.style.top="200px";
-    this._transferBoxPanel.addWidget(copyToRight);
-    this._transferBoxPanel.addWidget(copyToLeft);
+
+    // TODO buttons
+    // const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r, this._transferListWidget,
+    //     '-->', 'Copy left selected to right directory directly');
+	  // const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l, this._transferListWidget,
+    //     '<--', 'Copy right selected to left directory directly');
+    //this._transferBoxPanel.addWidget(copyToRight);
+    //this._transferBoxPanel.addWidget(copyToLeft);
 
     // ============= Middle main panel: FB-left / transfer buttons / FB-right ==============
     
@@ -181,6 +169,7 @@ export class dmWidget extends Widget {
     _wrapper1.setRelativeSizes([80,20]);
     let _wrapper = new DockPanel();
     _wrapper.addWidget(_wrapper1);
+
 
     // ======== Main panel =====================
     this._mainLayout = (this.layout = new BoxLayout());
@@ -221,9 +210,9 @@ export class dmWidget extends Widget {
     this._settings.setDefaultEndpoint(endpoint);
   }
 
-  private _fbWidget_l: dm_FileBrowser;
+  private _fbWidget_l: dm_FileTree;
   private _fbPanel_l: SplitPanel;
-  private _fbWidget_r: dm_FileBrowser;
+  private _fbWidget_r: dm_FileTree;
   private _fbPanel_r: SplitPanel;
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
