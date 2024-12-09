@@ -33,14 +33,12 @@ import {
 } from './dm_transferlist';
 
 import { 
-  // dm_CopyButton,
-  // dm_MountButton,
-  // dm_UnmountButton,
   dm_RefreshButton,
+  dm_SelectEndpointButton,
 } from './dm_buttons';
 
 import {
-  dm_FileTree
+  dm_FileTreePanel
 } from './dm_filetree';
 
 export class dm_Settings {
@@ -88,11 +86,11 @@ export class dmWidget extends Widget {
     // ============= Left FileBrowser ======================================
     
     let url_l = "uftp://demouser:test123@localhost:9000/rest/auth/TEST:";
-    this._fbWidget_l = new dm_FileTree(app, url_l);
+    this._fbWidget_l = new dm_FileTreePanel(app, url_l);
     
     // TODO buttons / actions
-    //const tb_mountbutton_l = new dm_MountButton(this._fbWidget_l, this._settings);
-    //this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
+    const tb_mountbutton_l = new dm_SelectEndpointButton(this._fbWidget_l, this._settings);
+    this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
     //const tb_unmountbutton_l = new dm_UnmountButton(this._fbWidget_l);
     //this._fbWidget_l.toolbar.addItem("unmountBtn", tb_unmountbutton_l);
 
@@ -106,11 +104,11 @@ export class dmWidget extends Widget {
 
     // ============= Right FileBrowser ======================================
     let url_r = "uftp://demouser:test123@localhost:9000/rest/auth/TEST:";
-    this._fbWidget_r = new dm_FileTree(app, url_r);
+    this._fbWidget_r = new dm_FileTreePanel(app, url_r);
     
     // TODO buttons / actions
-    //const tb_mountbutton_r = new dm_MountButton(this._fbWidget_r, this._settings);
-    //this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
+    const tb_mountbutton_r = new dm_SelectEndpointButton(this._fbWidget_r, this._settings);
+    this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
     //const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
     //this._fbWidget_r.toolbar.addItem("unmountBtn", tb_unmountbutton_r);
 
@@ -210,9 +208,9 @@ export class dmWidget extends Widget {
     this._settings.setDefaultEndpoint(endpoint);
   }
 
-  private _fbWidget_l: dm_FileTree;
+  private _fbWidget_l: dm_FileTreePanel;
   private _fbPanel_l: SplitPanel;
-  private _fbWidget_r: dm_FileTree;
+  private _fbWidget_r: dm_FileTreePanel;
   private _fbPanel_r: SplitPanel;
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
