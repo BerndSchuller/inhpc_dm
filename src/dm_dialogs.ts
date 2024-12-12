@@ -28,10 +28,20 @@ class SelectDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     availableEndpoints.forEach((item) => {
       const container = document.createElement('div');
       const option = document.createElement('input');
-      option.type = 'radio';
+      option.type = 'checkbox';
       option.name = 'inhpc_dm_endpoint_selection';
       option.value = item;
       option.id = 'inhpc_dm_endpoint_selection'+i;
+      option.onclick = (e: Event)=> {
+        var cb = e.target as HTMLInputElement;
+        if(cb.checked){
+          // uncheck everything else
+          this._list.forEach( (item) => {
+           item.checked = false;
+        });
+        cb.checked = true;
+        }
+      };
       if (i==0) option.checked = true;
       const label = document.createElement('label');
       label.textContent = item;
