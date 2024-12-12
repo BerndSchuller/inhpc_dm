@@ -39,8 +39,8 @@ class SelectDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
           this._list.forEach( (item) => {
            item.checked = false;
         });
-        cb.checked = true;
         }
+        cb.checked = true;
       };
       if (i==0) option.checked = true;
       const label = document.createElement('label');
