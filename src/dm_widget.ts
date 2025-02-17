@@ -33,6 +33,7 @@ import {
 } from './dm_transferlist';
 
 import { 
+  dm_CopyButton,
   dm_RefreshButton,
   dm_SelectEndpointButton,
 } from './dm_buttons';
@@ -109,8 +110,6 @@ export class dmWidget extends Widget {
     // TODO buttons / actions
     const tb_mountbutton_r = new dm_SelectEndpointButton(this._fbWidget_r, this._settings);
     this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
-    //const tb_unmountbutton_r = new dm_UnmountButton(this._fbWidget_r);
-    //this._fbWidget_r.toolbar.addItem("unmountBtn", tb_unmountbutton_r);
 
     this._transferListWidget = new dm_TransferList();
 
@@ -132,13 +131,12 @@ export class dmWidget extends Widget {
     this._transferBoxPanel.node.style.maxHeight="100px";
     this._transferBoxPanel.node.style.top="200px";
 
-    // TODO buttons
-    // const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r, this._transferListWidget,
-    //     '-->', 'Copy left selected to right directory directly');
-	  // const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l, this._transferListWidget,
-    //     '<--', 'Copy right selected to left directory directly');
-    //this._transferBoxPanel.addWidget(copyToRight);
-    //this._transferBoxPanel.addWidget(copyToLeft);
+    const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r, this._transferListWidget,
+         '-->', 'Copy left selected to right directory directly');
+	   const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l, this._transferListWidget,
+         '<--', 'Copy right selected to left directory directly');
+    this._transferBoxPanel.addWidget(copyToRight);
+    this._transferBoxPanel.addWidget(copyToLeft);
 
     // ============= Middle main panel: FB-left / transfer buttons / FB-right ==============
     

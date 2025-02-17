@@ -7,10 +7,7 @@ import {
   
 import { 
     addIcon,
-    clearIcon
   } from '@jupyterlab/ui-components';
-  
-import { dm_FileBrowser } from './mod_browser';
 
 import { dm_Settings } from './dm_widget';
 
@@ -63,47 +60,11 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 } // end dm_SelectEndpointButton
 
 /**
- * Button for un-mounting remote FS
- */
-export class dm_UnmountButton extends ToolbarButton {
-
-	constructor(fb: dm_FileBrowser){
-		super( {
-          icon: clearIcon,
-	      tooltip: 'Unmount remote filesystem',
-	      onClick: () => { this.handle_click(fb); }
-	    });
-	}
-	
-	async handle_click(fb: dm_FileBrowser){
-	    console.log(this);
-        var mountDirectory = fb.getSelectedDirectory();
-        var req_data = JSON.stringify({ 'mount_point': mountDirectory })
-        console.log('mount params: ' + req_data);
-        try {
-      	  const data = await requestAPI<any>('inhpc_dm/unmount', {
-      	     'body': req_data,
-      	     'method': 'POST'});
-      	  console.log(data);
-      	  showDialog({ title: "OK", body: "Unmount successful",
-      	 	            buttons: [ Dialog.okButton() ] });
-      	    // TODO trigger model refresh
-            //below commands dont make any difference!
-            //fb.getListing().update;
-            //fb.update;
-      	} catch (reason) {
-      	    console.error(`Error on POST /inhpc_dm/unmount: ${reason}`);
-      	    showErrorMessage("Error", `${reason}`);
-    	}
-	}
-} // end dm_UnmountButton
-
-/**
  * Button for launching copy task
  */
 export class dm_CopyButton extends ToolbarButton {
 
-	constructor(source: dm_FileBrowser, target: dm_FileBrowser, monitor: dm_TransferList, label: string, tooltip: string){
+	constructor(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList, label: string, tooltip: string){
 		super( {
           label: label,
 	      tooltip: tooltip,
@@ -111,15 +72,19 @@ export class dm_CopyButton extends ToolbarButton {
 	    });
 	}
 	
-	async handle_click(source: dm_FileBrowser, target: dm_FileBrowser, monitor: dm_TransferList){
+	async handle_click(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList){
 	    var _action = "copy";
-	    var _target_dir = target.getSelectedDirectory();
+	    var _target_dir = target.getSelectedDir();
 	    var _sources: string[] = []
-	    for (const item of source.getListing().selectedItems()) {
+	    for (const item of source.getSelected()) {
 			_sources.push(item.path);
 		};
-		if(_sources.length ==0){
+		if(_sources.length==0){
 			showErrorMessage("Error", "Please select source file(s)");
+			return
+		}
+		if(_target_dir==null){
+			showErrorMessage("Error", "Please select a target directory");
 			return
 		}
 		var req_data = JSON.stringify({
@@ -130,12 +95,13 @@ export class dm_CopyButton extends ToolbarButton {
 		                })	
         console.log('Copy command params: ' + req_data);
         try {
-      	  const data = await requestAPI<any>('inhpc_dm/tasks', {
-      	     'body': req_data,
-      	     'method': 'POST'});
-      	  console.log(data);
-      	  showDialog({ title: "OK", body: "Task launched successfully",
-      	 	             buttons: [ Dialog.okButton() ] });
+      		const data = await requestAPI<any>('inhpc_dm/tasks', {
+      	    	'body': req_data,
+      	    	'method': 'POST'});
+      	  	console.log(data);
+		  	var _title = data.status ?? "OK";
+		  	var _msg = data.error_info ?? "Task launched successfully";
+		  	showDialog({ title: _title, body: _msg, buttons: [ Dialog.okButton() ] });
 			monitor.refreshData();
       	} catch (reason) {
       	    console.error(`Error on POST /inhpc_dm/tasks: ${reason}`);

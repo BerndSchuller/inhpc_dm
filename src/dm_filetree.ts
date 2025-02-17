@@ -42,6 +42,30 @@ export class dm_FileTreePanel extends Widget {
     this.update();
   }
 
+  getSelectedDir(): string | null {
+    var sel: dm_FileTreeSelection[] = this.getSelected();
+    if(sel.length==1 && sel[0].isDir){
+      return sel[0].path;
+    }
+    else{
+      return null;
+    }
+  }
+
+  getSelected(): dm_FileTreeSelection[]{
+    var result: dm_FileTreeSelection[] = [];
+    this.treefinder.model.selection.forEach((item)=>{
+      console.log("selected: "+JSON.stringify(item));
+      var x = new dm_FileTreeSelection();
+      x.drive = this.drive;
+      x.path = item.pathstr;
+      x.isDir = "dir"==item.row.kind;
+      console.log("--> "+JSON.stringify(x));
+      result.push(x);
+    });
+    return result;
+  }
+
   toolbar: Toolbar;
   treefinder: dm_FileTree;
   drive: string;
@@ -62,3 +86,10 @@ export class dm_FileTree extends TreeFinderWidget {
   };
 
 };
+
+export class dm_FileTreeSelection {
+  constructor(){};
+  path: string;
+  drive: string;
+  isDir: boolean = false;
+}
