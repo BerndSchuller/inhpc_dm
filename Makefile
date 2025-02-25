@@ -8,7 +8,8 @@ update:
 
 jupyter-fs:
 	git clone https://github.com/jpmorganchase/jupyter-fs.git
-	
+	cd jupyter-fs; git checkout v1.0.1
+
 setup-jupyter-fs: jupyter-fs
 	sed -i "s|file://.*\"|file://$(PWD)/jupyter-fs/js\"|" package.json
 	cat <<- EOF >> jupyter-fs/js/src/index.tsx
