@@ -85,8 +85,7 @@ export class dmWidget extends Widget {
     // including browser and info panels
     
     // ============= Left FileBrowser ======================================
-    
-    let url_l = "uftp://demouser:test123@localhost:9000/rest/auth/TEST:";
+    let url_l = null; // TBD store in settings
     this._fbWidget_l = new dm_FileTreePanel(app, url_l);
     
     // TODO buttons / actions
@@ -104,7 +103,7 @@ export class dmWidget extends Widget {
     this._fbPanel_l.setRelativeSizes([90, 10]);
 
     // ============= Right FileBrowser ======================================
-    let url_r = "uftp://demouser:test123@localhost:9000/rest/auth/TEST:";
+    let url_r = null; //TBD store in settings
     this._fbWidget_r = new dm_FileTreePanel(app, url_r);
     
     // TODO buttons / actions

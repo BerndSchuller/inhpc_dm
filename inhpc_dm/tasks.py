@@ -124,4 +124,4 @@ class CopyOperation():
                     write_offset += written
                     to_write -= written
                 total = total + len(data)
-        return total, int(time()) - start_time
+        return total, int(time.time()) - start_time

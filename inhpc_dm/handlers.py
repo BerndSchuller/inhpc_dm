@@ -94,7 +94,7 @@ class TaskHandler(AbstractDMHandler):
         source_fs: FS = source_mgr._pyfilesystem_instance
         target_fs: FS = mm._managers[target_drive]._pyfilesystem_instance
         self.log.info("Source fsmanager %s" % source_fs)
-        self.log.info("Source fsmanager %s" % target_fs)
+        self.log.info("Target fsmanager %s" % target_fs)
 
         result_data = {}
         special = None # TODO special treatment if source/target has special features?

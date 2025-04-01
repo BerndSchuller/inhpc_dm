@@ -24,14 +24,14 @@ export class dm_FileTreePanel extends Widget {
     this.node.classList.add("jfs-mod-notRenaming");
     this.drive = drive;
     this.addClass("jp-tree-finder-sidebar");
-
     this.toolbar = new Toolbar();
     this.toolbar.addClass("jp-tree-finder-toolbar");
-    this.treefinder = new dm_FileTree(app, drive);
     this.layout = new PanelLayout();
-
     (this.layout as PanelLayout).addWidget(this.toolbar);
-    (this.layout as PanelLayout).addWidget(this.treefinder);
+    if (this.drive){
+      this.treefinder = new dm_FileTree(app, drive);
+      (this.layout as PanelLayout).addWidget(this.treefinder);
+    }
   }
 
   setEndpoint(drive: string){
@@ -48,7 +48,7 @@ export class dm_FileTreePanel extends Widget {
       return sel[0].path;
     }
     else{
-      return null;
+      return this.getCurrentDir();
     }
   }
 
@@ -66,6 +66,17 @@ export class dm_FileTreePanel extends Widget {
     return result;
   }
 
+  getCurrentDir(): string {
+    console.log("root: "+JSON.stringify(this.treefinder.model.root));
+    var result = this.treefinder.model.root.pathstr
+    if (result.includes("/")){
+      return result
+    }
+    else {
+      return result+"/"
+    }
+  
+  }
   toolbar: Toolbar;
   treefinder: dm_FileTree;
   drive: string;
