@@ -67,7 +67,6 @@ export class dm_FileTreePanel extends Widget {
   }
 
   getCurrentDir(): string {
-    console.log("root: "+JSON.stringify(this.treefinder.model.root));
     var result = this.treefinder.model.root.pathstr
     if (result.includes("/")){
       return result
