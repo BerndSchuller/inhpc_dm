@@ -10,7 +10,6 @@ import {
   JupyterFrontEnd
 } from '@jupyterlab/application';
 
-//import { Toolbar} from "@jupyterlab/apputils"; deprecated was moved to ui-components
 import { Toolbar} from "@jupyterlab/ui-components";
 
 import { PanelLayout, Widget } from "@lumino/widgets";
@@ -29,17 +28,17 @@ export class dm_FileTreePanel extends Widget {
     this.app = app;
     this.node.classList.add("jfs-mod-notRenaming");
     this.drive = drive;
-    this.addClass("jp-tree-finder-panel");
+    this.addClass("jp-tree-finder-sidebar");
 
     this.toolbar = new Toolbar();
     this.toolbar.addClass("jp-tree-finder-toolbar");
-    
-    this.treefinder = new dm_FileTree(app, drive);
-    
+        
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(this.toolbar);
-    (this.layout as PanelLayout).addWidget(this.treefinder);
-
+    if(drive){
+      this.treefinder = new dm_FileTree(app, drive);
+      (this.layout as PanelLayout).addWidget(this.treefinder);
+    }
   }
 
   setEndpoint(drive: string){
