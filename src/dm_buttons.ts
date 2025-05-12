@@ -92,7 +92,7 @@ export class dm_CopyButton extends ToolbarButton {
 		                "parameters": { 
 		                    "target" : _target_dir,
 		                    "sources": _sources }
-		                })	
+		                })
         console.log('Copy command params: ' + req_data);
         try {
       		const data = await requestAPI<any>('inhpc_dm/tasks', {
