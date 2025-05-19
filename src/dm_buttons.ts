@@ -2,14 +2,12 @@ import {
     Dialog,
     ToolbarButton,
     showDialog,
-    showErrorMessage
+    showErrorMessage,
   } from '@jupyterlab/apputils';
   
 import { 
-    addIcon,
+    addIcon
   } from '@jupyterlab/ui-components';
-
-import { dm_Settings } from './dm_widget';
 
 import { requestAPI } from './dm_handler';
 
@@ -24,15 +22,15 @@ import { dm_FileTreePanel } from './dm_filetree';
  */
 export class dm_SelectEndpointButton extends ToolbarButton {
 
-	constructor(fb: dm_FileTreePanel, _settings: dm_Settings){
+	constructor(fb: dm_FileTreePanel){
 		super( {
           icon: addIcon,
-	      tooltip: 'Select remote filesystem',
-	      onClick: () => { this.handle_click(fb, _settings); }
+	      tooltip: 'Choose remote filesystem',
+	      onClick: () => { this.handle_click(fb); }
 	    });
 	}
 	
-	async handle_click(fb: dm_FileTreePanel, _settings: dm_Settings){
+	async handle_click(fb: dm_FileTreePanel){
 	    // perform GET request for the list of available endpoints
 		try {
 			console.log("Getting available endpoints from jupyterfs...");
@@ -47,11 +45,15 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 			const selection = await selectEndpoint(urls);
 			const selected_url = selection.value;
 			let drive:string;
+			let name:string;
 			data.forEach( (v: any) => {
-				if(selected_url===v['url']) drive = v['drive'];
+				if(selected_url===v['url']){
+					drive = v['drive'];
+					name = v['name'];
+				}
 			});
 			console.log(`Selected drive = ${drive}`);
-			fb.setEndpoint(drive);
+			fb.setEndpoint(drive, name);
 		} catch (reason) {
 			console.error(`Error on POST /inhpc_dm/mount: ${reason}`);
 			showErrorMessage("Error", `${reason}`);

@@ -22,28 +22,29 @@ import {
 export class dm_FileTreePanel extends Widget {
   constructor(
     app : JupyterFrontEnd,
-    drive : string
   ){
     super();
     this.app = app;
     this.node.classList.add("jfs-mod-notRenaming");
-    this.drive = drive;
+    this.drive = null;
+    this.name = null;
+    this.treefinder = null;
     this.addClass("jp-tree-finder-sidebar");
-
     this.toolbar = new Toolbar();
-    this.toolbar.addClass("jp-tree-finder-toolbar");
-        
+    this.toolbar.addClass("jp-tree-finder-toolbar");  
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(this.toolbar);
-    if(drive){
-      this.treefinder = new dm_FileTree(app, drive);
-      (this.layout as PanelLayout).addWidget(this.treefinder);
-    }
-  }
+   }
 
-  setEndpoint(drive: string){
+  setEndpoint(drive: string, name: string){
     this.drive = drive;
-    (this.layout as PanelLayout).removeWidget(this.treefinder);
+    this.name = name;
+    if(this.treefinder){
+      // remove existing treefinder from UI
+      this.treefinder.parent = null;
+      this.update(); 
+      this.treefinder = null;
+    }
     this.treefinder = new dm_FileTree(this.app, drive);
     (this.layout as PanelLayout).addWidget(this.treefinder);
     this.update();
@@ -86,6 +87,7 @@ export class dm_FileTreePanel extends Widget {
   toolbar: Toolbar;
   treefinder: dm_FileTree;
   drive: string;
+  name: string;
   app: JupyterFrontEnd;
 };
 
@@ -95,11 +97,12 @@ export class dm_FileTree extends TreeFinderWidget {
     drive : string
   ){
     let columns = Array<keyof ContentsProxy.IJupyterContentRow>();
+    columns.push("path");
+    columns.push("size");
     let rootPath = drive;
     super({
       app, columns, rootPath
     });
-
   };
 
 };

@@ -78,6 +78,7 @@ export class dmWidget extends Widget {
     this.addClass('my-dmWidget');
 
     this._settings = new dm_Settings();
+    console.log(`Settings: ${this._settings}`);
   
 	// ============= Dual FileBrowser view ======================================
 	
@@ -85,14 +86,11 @@ export class dmWidget extends Widget {
     // including browser and info panels
     
     // ============= Left FileBrowser ======================================
-    let url_l = null; // TBD store in settings
-    this._fbWidget_l = new dm_FileTreePanel(app, url_l);
+    this._fbWidget_l = new dm_FileTreePanel(app);
     
     // TODO buttons / actions
-    const tb_mountbutton_l = new dm_SelectEndpointButton(this._fbWidget_l, this._settings);
-    this._fbWidget_l.toolbar.addItem("mountBtn", tb_mountbutton_l);
-    //const tb_unmountbutton_l = new dm_UnmountButton(this._fbWidget_l);
-    //this._fbWidget_l.toolbar.addItem("unmountBtn", tb_unmountbutton_l);
+    const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this._fbWidget_l);
+    this._fbWidget_l.toolbar.addItem("selectEndpointBtn", tb_selectEndpointButton_l);
 
     this._fbPanel_l = new SplitPanel({
       orientation: 'vertical',
@@ -103,12 +101,11 @@ export class dmWidget extends Widget {
     this._fbPanel_l.setRelativeSizes([90, 10]);
 
     // ============= Right FileBrowser ======================================
-    let url_r = null; //TBD store in settings
-    this._fbWidget_r = new dm_FileTreePanel(app, url_r);
+    this._fbWidget_r = new dm_FileTreePanel(app);
     
     // TODO buttons / actions
-    const tb_mountbutton_r = new dm_SelectEndpointButton(this._fbWidget_r, this._settings);
-    this._fbWidget_r.toolbar.addItem("mountBtn", tb_mountbutton_r);
+    const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this._fbWidget_r);
+    this._fbWidget_r.toolbar.addItem("selectEndpointBtn", tb_selectEndpointButton_r);
 
     this._transferListWidget = new dm_TransferList();
 
