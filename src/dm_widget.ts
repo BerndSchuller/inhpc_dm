@@ -281,11 +281,11 @@ export function activate_dm(
     name: () => 'inhpc_dm'
   });
   
+  // TODO
   function updateDefaultSettings(regSettings: ISettingRegistry.ISettings): void{
     let defHostSetting: string;
     defHostSetting = regSettings.get("defaultHost").composite.toString();
     console.log("Settings are: " + defHostSetting);
-    dmwidget.setDefaultEndpoint(defHostSetting);
   }
 
   Promise.all([settingRegistry.load(extension_id), app.started])

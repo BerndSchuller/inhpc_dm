@@ -1,17 +1,133 @@
 {
-    "title": "InHPC Datamanagement",
-    "description": "Settings for the InHPC Datamanagement extension.",
-    "type":"object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InHPC Datamanagement",
+  "description": "Settings for the InHPC Datamanagement extension.",
+  "jupyter.lab.setting-icon": "inhpc-jfs:drive",
+  "jupyter.lab.setting-icon-label": "inhpc-jfs",
+  "type": "object",
+  "jupyter.lab.shortcuts": [
+    {
+      "command": "treefinder:copy",
+      "keys": [
+        "Ctrl C"
+      ],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:cut",
+      "keys": [
+        "Ctrl X"
+      ],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:paste",
+      "keys": [
+        "Ctrl V"
+      ],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:rename",
+      "keys": [
+        "F2"
+      ],
+      "selector": ".jp-tree-finder-sidebar"
+    },
+    {
+      "command": "treefinder:delete",
+      "keys": [
+        "Delete"
+      ],
+      "selector": ".jp-tree-finder-sidebar.jfs-mod-notRenaming"
+    }
+  ],
+  "definitions": {
+    "resource": {
+      "description": "Specification for an fs resource",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Display name of resource",
+          "type": "string"
+        },
+        "url": {
+          "description": "A url pointing to an fs resource, as per the PyFilesystem fsurl specification",
+          "type": "string",
+          "pattern": "^.+?://([^:]*:.*@.*|[^@]*)$"
+        },
+        "preferred_dir": {
+          "description": "Directory to be first opened (e.g., myDir/mySubdir)",
+          "type": "string"
+        },
+        "auth": {
+          "description": "Given any template {{VARS}} in the url, 'ask' (default) to open a dialog box asking for credentials, or `env` to pick up credentials from the server's environment variables",
+          "type": "string",
+          "enum": [
+            "ask",
+            "env",
+            false
+          ],
+          "default": "ask"
+        },
+        "defaultWritable": {
+          "description": "Fallback for determining if resource is writeable. Used only if the underlying PyFilesystem does not provide this information (eg S3)",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
     "properties": {
-      "defaultHost": {
-        "title": "Default UFTP endpoint",
-        "description": "The default UFTP endpoint",
-        "type":"string",
-        "enum":["https://localhost:9000/rest/auth/TEST",
-        "https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
-        "https://uftp.fz-juelich.de/UFTP_Auth/rest/auth/JUDAC",
-        "https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"],
-        "default": "https://localhost:9000/rest/auth/TEST"
-      }      
+      "resources": {
+        "title": "Resources",
+        "description": "The list of fs resource specifications",
+        "items": {
+          "$ref": "#/definitions/resource"
+        },
+        "type": "array",
+        "default": []
+      },
+      "options": {
+        "title": "Options",
+        "description": "Global options for jupyter-fs",
+        "type": "object",
+        "properties": {
+          "cache": {
+            "description": "If true, only recreate the actual resources when necessary (ie on initial load or changes to 'resources')",
+            "type": "boolean",
+            "default": true
+          },
+          "verbose": {
+            "description": "If true, jupyter-fs will output helpful info messages to the console",
+            "type": "boolean",
+            "default": false
+          },
+          "writtenVersion": {
+            "description": "The version of the schema these settings were written with (do not edit)",
+            "type": "string"
+          }
+        },
+        "default": {}
+      },
+      "display_columns": {
+        "title": "Display Columns",
+        "description": "The list of columns that will be displayed",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "size",
+            "last_modified",
+            "writable",
+            "mimetype"
+          ]
+        },
+        "default": [
+          "size"
+        ],
+        "maxItems": 4,
+        "uniqueItems": true
+      }
     }
   }
+}

@@ -6,8 +6,8 @@ from pathlib import Path
 from jupyter_server.base.handlers import JupyterHandler
 from jupyter_server.utils import url_path_join
 
-from jupyterfs.metamanager import MetaManager
-from jupyterfs.fsmanager import FSManager
+from .metamanager import MetaManager
+from .fsmanager import FSManager
 from fs.base import FS
 
 import tornado

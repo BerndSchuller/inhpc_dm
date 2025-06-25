@@ -34,7 +34,7 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 	    // perform GET request for the list of available endpoints
 		try {
 			console.log("Getting available endpoints from jupyterfs...");
-			const data: Array<Object> = await requestAPI<any>('jupyterfs/resources', {
+			const data: Array<Object> = await requestAPI<any>('inhpc_dm/resources', {
 				'method': 'GET'});
 			console.log(data);
 			const urls: Array<string> = [];
@@ -55,7 +55,7 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 			console.log(`Selected drive = ${drive}`);
 			fb.setEndpoint(drive, name);
 		} catch (reason) {
-			console.error(`Error on POST /inhpc_dm/mount: ${reason}`);
+			console.error(`Error on GET /inhpc_dm/resources: ${reason}`);
 			showErrorMessage("Error", `${reason}`);
 		}
 	}

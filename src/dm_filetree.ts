@@ -3,8 +3,12 @@
  */
 
 import {
-  ContentsProxy, TreeFinderWidget
-} from 'jupyter-fs';
+  ContentsProxy
+} from "./contents_proxy";
+
+import {
+  TreeFinderWidget
+} from "./treefinder";
 
 import {
   JupyterFrontEnd
@@ -98,7 +102,7 @@ export class dm_FileTree extends TreeFinderWidget {
   ){
     let columns = Array<keyof ContentsProxy.IJupyterContentRow>();
     columns.push("path");
-    columns.push("size");
+   // columns.push("size");
     let rootPath = drive;
     super({
       app, columns, rootPath

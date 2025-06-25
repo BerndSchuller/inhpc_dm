@@ -1,1 +1,24 @@
-@import url('base.css');
+.dm_Widget-main *{
+  overflow: visible;
+}
+
+#inhpc-datamanagement *
+{
+  overflow: auto;
+}
+
+#settingsWidget, #infoWidget
+{
+  height: 200px;
+}
+
+:root {
+  --indent: 1em;
+}
+
+@import url('~tree-finder/dist/tree-finder.css');
+@import url('~tree-finder/dist/theme/material.css');
+
+@import url('./auth.css');
+@import url('./filetree.css');
+@import url('./treefinder.css');
