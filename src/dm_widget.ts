@@ -283,9 +283,7 @@ export function activate_dm(
   
   // TODO
   function updateDefaultSettings(regSettings: ISettingRegistry.ISettings): void{
-    let defHostSetting: string;
-    defHostSetting = regSettings.get("defaultHost").composite.toString();
-    console.log("Settings are: " + defHostSetting);
+    console.log("Handle settings TBD");
   }
 
   Promise.all([settingRegistry.load(extension_id), app.started])
@@ -297,7 +295,7 @@ export function activate_dm(
       });
     })
     .catch((reason: Error) => {
-      console.error("Problem with InHPC_dm settings: " + reason.message);
+      console.error("Problem with InHPC_dm settings: " + reason);
     }
   );
   
