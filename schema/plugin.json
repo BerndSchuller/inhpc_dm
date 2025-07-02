@@ -44,7 +44,19 @@
         }
       }
     },
-
+    "options": {
+      "title": "Options",
+      "description": "Global options for InHPC_DM",
+      "type": "object",
+      "properties": {
+        "verbose": {
+          "description": "If true, InHPC_DM will output helpful info messages to the console",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "default": {}
+    },
     "display_columns": {
       "title": "Display Columns",
       "description": "The list of columns that will be displayed",

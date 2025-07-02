@@ -136,7 +136,7 @@ abstract class FSCommBase implements IFSComm {
   }
 
   get resourcesUrl(): string {
-    return URLExt.join(this.baseUrl, "inhpc_de/resources");
+    return URLExt.join(this.baseUrl, "inhpc_dm/resources");
   }
 
   get settings(): ServerConnection.ISettings {

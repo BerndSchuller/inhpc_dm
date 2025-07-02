@@ -25,7 +25,6 @@ import {
 } from '@lumino/widgets';
 
 import{ IDocumentManager } from '@jupyterlab/docmanager';
-import{ ISettingRegistry } from '@jupyterlab/settingregistry';
 import { folderIcon } from '@jupyterlab/ui-components';
 
 import {
@@ -224,13 +223,9 @@ export function activate_dm(
   documentManager: IDocumentManager, 
   palette: ICommandPalette, 
   restorer: ILayoutRestorer, 
-  settingRegistry: ISettingRegistry,
   launcher: ILauncher | null,
-  extension_id: string
   ) {
-
-  console.log('JupyterLab extension InHPC data management activating.');
-
+  console.log('Initialising InHPC data management front-end.');
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
   const dmwidget = new dmWidget(app, documentManager);
@@ -280,23 +275,5 @@ export function activate_dm(
     command: command_dm,
     name: () => 'inhpc_dm'
   });
-  
-  // TODO
-  function updateDefaultSettings(regSettings: ISettingRegistry.ISettings): void{
-    console.log("Handle settings TBD");
-  }
-
-  Promise.all([settingRegistry.load(extension_id), app.started])
-    .then(([settings]) => {
-      console.log("Loading InHPC_dm settings.");
-      updateDefaultSettings(settings);
-      settings.changed.connect(() => {
-      updateDefaultSettings(settings);
-      });
-    })
-    .catch((reason: Error) => {
-      console.error("Problem with InHPC_dm settings: " + reason);
-    }
-  );
-  
+ 
 }
