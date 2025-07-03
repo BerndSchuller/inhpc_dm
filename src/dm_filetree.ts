@@ -28,14 +28,13 @@ export class dm_FileTreePanel extends Widget {
     app : JupyterFrontEnd,
   ){
     super();
+    this.addClass("jp-tree-finder-sidebar");
     this.app = app;
     this.node.classList.add("jfs-mod-notRenaming");
     this.drive = null;
     this.name = null;
     this.treefinder = null;
-    this.addClass("jp-tree-finder-sidebar");
     this.toolbar = new Toolbar();
-    this.toolbar.addClass("jp-tree-finder-toolbar");  
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(this.toolbar);
    }
@@ -102,7 +101,7 @@ export class dm_FileTree extends TreeFinderWidget {
   ){
     let columns = Array<keyof ContentsProxy.IJupyterContentRow>();
     columns.push("path");
-   // columns.push("size");
+    columns.push("size");
     let rootPath = drive;
     super({
       app, columns, rootPath
