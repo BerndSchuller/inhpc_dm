@@ -70,9 +70,12 @@ setup_args = dict(
     cmdclass=cmdclass,
     packages=setuptools.find_packages(),
     install_requires=[
+        "fs>=2.4.11",
+        "fs-s3fs>=1.1.1",
+        "fs.smbfs>=0.6.3",
         "jupyterlab>=4.2",
         "fusepy~=3.0.1",
-        "pyunicore[crypto]>=1.1.1",
+        "pyunicore[crypto]>=1.3.4",
         "bcrypt>=4.0.0"
     ],
     zip_safe=False,

@@ -40,7 +40,7 @@ export class dm_TransferList extends DataGrid {
 
   async refreshData() {
     try {
-      const task_info = await requestAPI<any>('tasks', {
+      const task_info = await requestAPI<any>('inhpc_dm/tasks', {
          'method': 'GET'});
       console.log(task_info['tasks']);
       let transferListModel = new JSONModel({data: task_info['tasks'], schema: schema});

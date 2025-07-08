@@ -2,6 +2,7 @@
   "ServerApp": {
     "jpserver_extensions": {
       "inhpc_dm": true
-    }
+    },
+    "contents_manager_class": "inhpc_dm.metamanager.MetaManager"
   }
 }

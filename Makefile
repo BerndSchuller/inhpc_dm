@@ -1,3 +1,5 @@
+.ONESHELL:
+
 update:
 	pip uninstall --yes inhpc_dm
 	pip install .
