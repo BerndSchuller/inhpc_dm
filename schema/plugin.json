@@ -2,15 +2,11 @@
   "title": "InHPC Datamanagement",
   "description": "Settings for the InHPC Datamanagement extension.",
   "type": "object",
-  "properties": {
+  "additionalProperties": false,
 
-    "resources": {
-      "title": "Resources",
-      "description": "The list of fs resource specifications",
-      "type": "array",
-      "default": [],
-      "items": {
-        "description": "Specification for an fs resource",
+  "definitions": {
+    "resourceItem": {
+      "description": "Specification for an fs resource",
         "type": "object",
         "properties": {
           "name": {
@@ -18,7 +14,7 @@
             "type": "string"
           },
           "url": {
-            "description": "A url pointing to an fs resource, as per the PyFilesystem fsurl specification",
+            "description": "A URL pointing to an fs resource, as per the PyFilesystem fsurl specification",
             "type": "string",
             "pattern": "^.+?:\/\/([^:]*:.*@.*|[^@]*)$"
           },
@@ -42,6 +38,17 @@
             "default": true
           }
         }
+    }
+  },
+  "properties": {
+
+    "resources": {
+      "title": "Resources",
+      "description": "The list of fs resource specifications",
+      "type": "array",
+      "default": [],
+      "items": {
+         "$ref": "#/definitions/resourceItem"
       }
     },
     "options": {
