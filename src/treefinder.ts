@@ -62,6 +62,7 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
   }
 
   remove(finder: TreeFinderSidebar) {
+    console.info("REMOVING TreeFinderSidebar")
     this._finders.delete(finder.id);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -609,6 +610,7 @@ export class TreeFinderSidebar extends Widget {
     preferredDir,
   }: TreeFinderSidebar.IOptions) {
     super();
+    console.info(`Creating TreeFinderSidebar widget for url=${url}`)
     this.id = id;
     this.node.classList.add("jfs-mod-notRenaming");
     this.url = url;

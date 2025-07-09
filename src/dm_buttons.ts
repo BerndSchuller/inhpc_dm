@@ -53,7 +53,7 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 				}
 			});
 			console.log(`Selected drive = ${drive}`);
-			fb.setEndpoint(drive, name);
+			fb.setEndpoint(selected_url, drive, name);
 		} catch (reason) {
 			console.error(`Error on GET /inhpc_dm/resources: ${reason}`);
 			showErrorMessage("Error", `${reason}`);

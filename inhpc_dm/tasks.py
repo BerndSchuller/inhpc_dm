@@ -118,15 +118,14 @@ class CopyOperation():
         buffer_size = 16384
         total = 0
         start_time = int(time.time())
+        to_read = num_bytes if num_bytes>-1 else maxsize
         try:
             with (
                 self.source_fs.openbin(source_path, "r") as source, 
                 self.target_fs.openbin(target_path, "w") as target
             ):
-                if num_bytes<0:
-                    num_bytes = maxsize
-                while total<num_bytes:
-                    length = min(buffer_size, num_bytes-total)
+                while total<to_read:
+                    length = min(buffer_size, to_read-total)
                     data = source.read(length)
                     to_write = len(data)
                     if to_write==0:
@@ -140,6 +139,12 @@ class CopyOperation():
                         to_write -= written
                     total = total + len(data)
             self.status = "FINISHED"
+        except EOFError as e:
+            if num_bytes>-1:
+                self.status = "FAILED"
+                self.status_message = f"Premature end of data, expected {num_bytes}, got {total}"
+            else:
+                self.status = "FINISHED"
         except Exception as e:
             self.status = "FAILED"
             self.status_message = f"{type(e).__name__}: {e}"

@@ -24,7 +24,6 @@ import {
   Widget
 } from '@lumino/widgets';
 
-import{ IDocumentManager } from '@jupyterlab/docmanager';
 import { folderIcon } from '@jupyterlab/ui-components';
 
 import {
@@ -38,54 +37,24 @@ import {
 } from './dm_buttons';
 
 import {
-  dm_FileTreePanel
+  dm_FileTreePanel,
 } from './dm_filetree';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
-export class dm_Settings {
-
-  constructor() {}
-
-  getDefaultEndpoint(): string {
-    return this._settings["default_endpoint"];
-  }
-
-  setDefaultEndpoint(default_endpoint: string) {
-    this._settings["default_endpoint"] = default_endpoint;
-  }
-
-  getUFTPEndpoints(): string[] {
-    return this._settings["uftp_endpoints"];
-  }
-
-  private _settings = {
-    "uftp_endpoints": [
-      "https://localhost:9000/rest/auth/TEST",
-      "https://gridftp-fr1.hww.hlrs.de:9000/rest/auth/HLRS",
-      "https://uftp.fz-juelich.de/UFTP_Auth/rest/auth/JUDAC",
-      "https://datagw03.supermuc.lrz.de:9000/rest/auth/DATAGW"
-    ],
-    "default_endpoint": ""
-    };
-
-
-}//end dm_Settings
 
 export class dmWidget extends Widget {
 
-  constructor(app: JupyterFrontEnd, docManager: IDocumentManager) {
+  constructor(app: JupyterFrontEnd, settings: ISettingRegistry.ISettings) {
     super();
     this.addClass('my-dmWidget');
 
-    this._settings = new dm_Settings();
-    console.log(`Settings: ${this._settings}`);
-  
-	// ============= Dual FileBrowser view ======================================
+	// ============= Dual file tree view ======================================
 	
-    // left ("_l") and right ("_r") file browser panel each 
+    // left ("_l") and right ("_r") file tree panel each 
     // including browser and info panels
     
-    // ============= Left FileBrowser ======================================
-    this._fbWidget_l = new dm_FileTreePanel(app);
+    // ============= Left file tree ======================================
+    this._fbWidget_l = new dm_FileTreePanel(app, settings);
     
     // TODO buttons / actions
     const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this._fbWidget_l);
@@ -99,8 +68,8 @@ export class dmWidget extends Widget {
     this._fbPanel_l.addWidget(this._fbWidget_l);
     this._fbPanel_l.setRelativeSizes([90, 10]);
 
-    // ============= Right FileBrowser ======================================
-    this._fbWidget_r = new dm_FileTreePanel(app);
+    // ============= Right file tree =====================================
+    this._fbWidget_r = new dm_FileTreePanel(app, settings);
     
     // TODO buttons / actions
     const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this._fbWidget_r);
@@ -179,28 +148,6 @@ export class dmWidget extends Widget {
 
   }//end constructor
 
-
-
-  formatBytes(bytes:number, decimals = 2) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-  
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-  }
-
-  print_object_details(obj:Object) {
-    console.log("Print Object Details");
-	  console.log(Object.getOwnPropertyNames(obj).sort());
-  }
-
-  setDefaultEndpoint(endpoint: string): void {
-    this._settings.setDefaultEndpoint(endpoint);
-  }
-
   private _fbWidget_l: dm_FileTreePanel;
   private _fbPanel_l: SplitPanel;
   private _fbWidget_r: dm_FileTreePanel;
@@ -208,10 +155,8 @@ export class dmWidget extends Widget {
   private _transferBoxPanel: BoxPanel;
   private _fbPanel: BoxPanel;
   private _transferListWidget: dm_TransferList;
-  
   private _mainLayout: BoxLayout;
   private _panel_collection: SplitPanel;
-  private _settings: dm_Settings;
 
 }// end class dmWidget
 
@@ -220,15 +165,15 @@ export class dmWidget extends Widget {
 */
 export function activate_dm(
   app: JupyterFrontEnd,
-  documentManager: IDocumentManager, 
-  palette: ICommandPalette, 
-  restorer: ILayoutRestorer, 
+  palette: ICommandPalette,
+  restorer: ILayoutRestorer,
   launcher: ILauncher | null,
+  settings: ISettingRegistry.ISettings
   ) {
   console.log('Initialising InHPC data management front-end.');
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
-  const dmwidget = new dmWidget(app, documentManager);
+  const dmwidget = new dmWidget(app, settings);
 
   let cmd = {
     label: 'InHPC - Data Management dual browser view',
