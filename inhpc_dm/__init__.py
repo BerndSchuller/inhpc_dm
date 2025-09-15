@@ -7,13 +7,17 @@ from .handlers import setup_handlers
 from .metamanager import MetaManagerShared, MetaManager, MetaManagerHandler
 from ._version import __version__
 
-_mm_config_warning_msg = """Misconfiguration of MetaManager. Please add:
+_mm_config_warning_msg = """InHPC Datamanagement extension will not be working due to missing configuration. Please add:
 
 "ServerApp": {
   "contents_manager_class": "inhpc_dm.metamanager.MetaManager"
 }
 
-to your Notebook Server config."""
+to your Jupyter Server config, or lauch Jupyter with an argument
+
+ --ServerApp.contents_manager_class=inhpc_dm.metamanager.MetaManager
+
+"""
 
 
 HERE = Path(__file__).parent.resolve()
@@ -39,7 +43,7 @@ def _load_jupyter_server_extension(serverapp):
     """
 
     if not isinstance(serverapp.contents_manager, MetaManagerShared):
-        warnings.warn(_mm_config_warning_msg)
+        serverapp.log.info(_mm_config_warning_msg)
         return
 
 
@@ -49,7 +53,7 @@ def _load_jupyter_server_extension(serverapp):
 
     resources_url = "inhpc_dm/resources"
     base_url = serverapp.web_app.settings["base_url"]   
-    serverapp.log.info("Installing inhpc jfs resources handler on path %s" % url_path_join(base_url, resources_url))
+    serverapp.log.info("Installing inhpc_dm resources handler on path %s" % url_path_join(base_url, resources_url))
     host_pattern = ".*$"
     serverapp.web_app.add_handlers(
         host_pattern,

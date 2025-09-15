@@ -33,7 +33,6 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 	async handle_click(fb: dm_FileTreePanel){
 	    // perform GET request for the list of available endpoints
 		try {
-			console.log("Getting available endpoints from jupyterfs...");
 			const data: Array<Object> = await requestAPI<any>('inhpc_dm/resources', {
 				'method': 'GET'});
 			console.log(data);
@@ -44,6 +43,8 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 			});
 			const selection = await selectEndpoint(urls);
 			const selected_url = selection.value;
+			if (selected_url==null)
+				return;
 			let drive:string;
 			let name:string;
 			data.forEach( (v: any) => {

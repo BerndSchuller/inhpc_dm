@@ -20,6 +20,8 @@ name = "inhpc_dm"
 
 lab_path = (HERE / name / "labextension")
 
+server_config_path = (HERE / "jupyter-config" / "server-config")
+
 # Representative files that should exist after a successful build
 jstargets = [
     str(lab_path / "package.json"),
@@ -34,6 +36,7 @@ labext_name = "inhpc_dm"
 data_files_spec = [
     ("share/jupyter/labextensions/%s" % labext_name, str(lab_path), "**"),
     ("share/jupyter/labextensions/%s" % labext_name, str(HERE), "install.json"),
+    ("etc/jupyter/jupyter_server_config.d/", str(server_config_path), "inhpc_dm.json"),
 ]
 
 cmdclass = create_cmdclass("jsdeps",
@@ -75,7 +78,7 @@ setup_args = dict(
         "fs.smbfs>=0.6.3",
         "jupyterlab>=4.2",
         "fusepy~=3.0.1",
-        "pyunicore[crypto]>=1.3.4",
+        "pyunicore[crypto]>=1.3.5",
         "bcrypt>=4.0.0"
     ],
     zip_safe=False,

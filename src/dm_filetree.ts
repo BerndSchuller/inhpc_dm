@@ -94,7 +94,7 @@ export class dm_FileTreePanel extends Widget {
   
   }
   toolbar: Toolbar;
-  treefinder: TreeFinderSidebar; //dm_FileTree;
+  treefinder: TreeFinderSidebar;
   drive: string;
   name: string;
   app: JupyterFrontEnd;
