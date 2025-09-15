@@ -1,2 +1,2 @@
-jupyter_packaging~=0.7.9
+jupyter_packaging~=0.12.3
 jupyterlab~=4.0
