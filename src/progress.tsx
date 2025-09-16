@@ -48,8 +48,8 @@ import {
 import { ArrayExt } from "@lumino/algorithm";
 import React from "react";
 
-import type { TreeFinderSidebar } from "./treefinder";
 import type { IUploadProgress, Uploader } from "./upload";
+import { TreeFinderWidget } from "./treefinder";
 
 /**
  * Half-spacing between items in the overall status item.
@@ -144,19 +144,20 @@ export class FileUploadStatus extends VDomRenderer<FileUploadStatus.Model> {
     this._tracker.currentChanged.disconnect(this._onTreeFinderChange);
   }
 
+  // TODO
   private _onTreeFinderChange = (
-    tracker: WidgetTracker<TreeFinderSidebar>,
-    sidebar: TreeFinderSidebar | null
+    tracker: WidgetTracker<TreeFinderWidget>,
+    //sidebar: TreeFinderSidebar | null
   ) => {
-    if (sidebar === null) {
-      this.model.sidebar = null;
-    } else {
-      this.model.sidebar = sidebar;
-    }
+    // if (sidebar === null) {
+    //   this.model.sidebar = null;
+    // } else {
+    //   this.model.sidebar = sidebar;
+    // }
   };
 
   private readonly translator: ITranslator;
-  private _tracker: WidgetTracker<TreeFinderSidebar>;
+  private _tracker: WidgetTracker<TreeFinderWidget>;
 }
 
 /**
@@ -170,7 +171,7 @@ export namespace FileUploadStatus {
     /**
      * Construct a new model.
      */
-    constructor(sidebar: TreeFinderSidebar | null) {
+    constructor(sidebar: TreeFinderWidget| null) {
       super();
       this.sidebar = sidebar;
     }
@@ -185,20 +186,20 @@ export namespace FileUploadStatus {
     /**
      * The current file browser model.
      */
-    get sidebar(): TreeFinderSidebar | null {
+    get sidebar(): TreeFinderWidget | null {
       return this._sidebar;
     }
-    set sidebar(browserModel: TreeFinderSidebar | null) {
+    set sidebar(browserModel: TreeFinderWidget | null) {
       const oldSidebar = this._sidebar;
       if (oldSidebar) {
-        oldSidebar.treefinder.uploader!.uploadChanged.disconnect(this._uploadChanged);
+        oldSidebar.uploader!.uploadChanged.disconnect(this._uploadChanged);
       }
 
       this._sidebar = browserModel;
       this._items = [];
 
       if (this._sidebar !== null) {
-        this._sidebar.treefinder.uploader!.uploadChanged.connect(this._uploadChanged);
+        this._sidebar.uploader!.uploadChanged.connect(this._uploadChanged);
       }
 
       this.stateChanged.emit(void 0);
@@ -249,7 +250,7 @@ export namespace FileUploadStatus {
     };
 
     private _items: IFileUploadItem[] = [];
-    private _sidebar: TreeFinderSidebar | null = null;
+    private _sidebar: TreeFinderWidget | null = null;
   }
 
   /**
@@ -259,7 +260,7 @@ export namespace FileUploadStatus {
     /**
      * The application file browser tracker.
      */
-    readonly tracker: WidgetTracker<TreeFinderSidebar>;
+    readonly tracker: WidgetTracker<TreeFinderWidget>;
 
     /**
      * The translation language bundle.

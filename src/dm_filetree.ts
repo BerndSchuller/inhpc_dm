@@ -7,20 +7,25 @@ import {
 } from "./contents_proxy";
 
 import {
-  TreeFinderSidebar,
+  TreeFinderSidebar, TreeFinderWidget
 } from "./treefinder";
 
 import {
   JupyterFrontEnd
 } from '@jupyterlab/application';
 
-import { Toolbar} from "@jupyterlab/ui-components";
+import { Toolbar,
+    ToolbarButton,
+    newFolderIcon,
+    refreshIcon
+} from "@jupyterlab/ui-components";
 
 import { PanelLayout, Widget } from "@lumino/widgets";
 
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import { commandIDs } from "./commands";
 
-//holds one TreeFinderSidebar
+//holds one TreeFinderWidget
 export class dm_FileTreePanel extends Widget {
   constructor(
     app : JupyterFrontEnd,
@@ -36,8 +41,51 @@ export class dm_FileTreePanel extends Widget {
     this.toolbar = new Toolbar();
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(this.toolbar);
+    this._buttons = []
 
+    const refresh_button = new ToolbarButton({
+      icon: refreshIcon,
+      onClick: () => {
+        TreeFinderSidebar.tracker.setCurrent(this.treefinder);
+        void app.commands.execute(commandIDs.refresh);
+        TreeFinderSidebar.tracker.setCurrent(null);
+    },
+       tooltip: "Refresh",
+       enabled: false
+     }
+     
+    );
+
+    const new_file_button = new ToolbarButton({
+      icon: newFolderIcon,
+      onClick: () => {
+        TreeFinderSidebar.tracker.setCurrent(this.treefinder);
+        void app.commands.execute((commandIDs.create_folder));
+        TreeFinderSidebar.tracker.setCurrent(null);
+      },
+      tooltip: "New Folder",
+       enabled: false
+    });
+
+    this.toolbar.addItem("refresh", refresh_button);
+    this.toolbar.addItem("new file", new_file_button);
+
+    this._buttons.push(refresh_button);
+    this._buttons.push(new_file_button);
    }
+
+  protected onBeforeShow(msg: any): void {
+   if(this.treefinder){
+    this.treefinder.refresh();
+    this.treefinder.draw();
+   }
+  }
+
+  protected onResize(msg: any): void {
+    if(this.treefinder){
+      this.treefinder.draw();
+    }
+  }
 
   setEndpoint(url: string, drive: string, name: string){
     this.drive = drive;
@@ -49,13 +97,15 @@ export class dm_FileTreePanel extends Widget {
       TreeFinderSidebar.tracker.remove(this.treefinder);
       this.treefinder = null;
     }
-    //this.treefinder = new dm_FileTree(this.app, drive);
     let columns = Array<keyof ContentsProxy.IJupyterContentRow>();
     columns.push("path");
     columns.push("size");
-    this.treefinder = new TreeFinderSidebar( {app:this.app, columns:columns, url:url, rootPath: drive, settings:this.settings });
+    this.treefinder = new TreeFinderWidget( {app:this.app, columns:columns, url:url, rootPath: drive, settings:this.settings });
     (this.layout as PanelLayout).addWidget(this.treefinder);
     TreeFinderSidebar.tracker.add(this.treefinder);
+    this._buttons.forEach(b => {
+      b.enabled = true;
+    });
     this.update();
   }
 
@@ -71,7 +121,7 @@ export class dm_FileTreePanel extends Widget {
 
   getSelected(): dm_FileTreeSelection[]{
     var result: dm_FileTreeSelection[] = [];
-    this.treefinder.treefinder.model.selection.forEach((item)=>{
+    this.treefinder.model.selection.forEach((item)=>{
       console.log("selected: "+JSON.stringify(item));
       var x = new dm_FileTreeSelection();
       x.drive = this.drive;
@@ -84,7 +134,7 @@ export class dm_FileTreePanel extends Widget {
   }
 
   getCurrentDir(): string {
-    var result = this.treefinder.treefinder.model.root.pathstr
+    var result = this.treefinder.model.root.pathstr
     if (result.includes("/")){
       return result
     }
@@ -94,11 +144,12 @@ export class dm_FileTreePanel extends Widget {
   
   }
   toolbar: Toolbar;
-  treefinder: TreeFinderSidebar;
+  treefinder: TreeFinderWidget;
   drive: string;
   name: string;
   app: JupyterFrontEnd;
   settings: ISettingRegistry.ISettings;
+  _buttons: ToolbarButton[];
 };
 
 export class dm_FileTreeSelection {

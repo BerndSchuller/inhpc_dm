@@ -6,63 +6,66 @@
  * the Apache License 2.0.  The full license can be found in the LICENSE file.
  *
  */
-import { ILayoutRestorer, IRouter, JupyterFrontEnd } from "@jupyterlab/application";
+import { JupyterFrontEnd } from "@jupyterlab/application";
 import {
   Dialog,
-  IWindowResolver,
   showDialog,
   showErrorMessage,
-  Toolbar,
-  ToolbarButton,
-  WidgetTracker, /*Clipboard, Dialog, IWindowResolver, showDialog*/
+  WidgetTracker,
 } from "@jupyterlab/apputils";
 
-// import { PathExt, URLExt } from "@jupyterlab/coreutils";
-import { IDocumentManager, isValidFileName /*renameFile*/ } from "@jupyterlab/docmanager";
-// import { DocumentRegistry } from "@jupyterlab/docregistry";
+import { isValidFileName } from "@jupyterlab/docmanager";
+
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import {
   ITranslator,
   nullTranslator,
   TranslationBundle,
 } from "@jupyterlab/translation";
-import {
-  refreshIcon,
-  newFolderIcon,
-} from "@jupyterlab/ui-components";
+
 // import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
 import { CommandRegistry } from "@lumino/commands";
 import { PromiseDelegate } from "@lumino/coreutils";
 import { Message } from "@lumino/messaging";
-import { PanelLayout, Widget } from "@lumino/widgets";
 import { Content, ContentsModel, Format, Path, TreeFinderGridElement, TreeFinderPanelElement } from "tree-finder";
 
 import { JupyterClipboard } from "./clipboard";
-import { commandIDs, idFromResource } from "./commands";
 import { ContentsProxy } from "./contents_proxy";
-import { getContentParent, revealPath, openDirRecursive } from "./contents_utils";
+import { getContentParent, openDirRecursive } from "./contents_utils";
 import { DragDropWidget, TABLE_HEADER_MIME } from "./drag";
-import { IFSResource } from "./filesystem";
-import { fileTreeIcon } from "./icons";
+
 import { promptRename } from "./utils";
-import { Uploader, UploadButton } from "./upload";
+import { Uploader } from "./upload";
 import { MimeData } from "@lumino/coreutils";
 import { Drag } from "@lumino/dragdrop";
 
 
-export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
-  async add(finder: TreeFinderSidebar) {
-    this._finders.set(finder.id, finder);
+export class TreeFinderTracker extends WidgetTracker<TreeFinderWidget> {
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    finder.disposed.connect(this._onWidgetDisposed, this);
-
-    return super.add(finder);
+  setCurrent(finder: TreeFinderWidget){
+    this._current = finder;
   }
 
-  remove(finder: TreeFinderSidebar) {
-    console.info("REMOVING TreeFinderSidebar")
+  get currentWidget() {
+    if(this._current){
+      return this._current;
+    }
+    return super.currentWidget;
+  }
+
+  async add(finder: TreeFinderWidget) {
+    if(finder){
+      this._finders.set(finder.id, finder);
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      finder.disposed.connect(this._onWidgetDisposed, this);
+
+      return super.add(finder);
+      }
+  }
+
+  remove(finder: TreeFinderWidget) {
     this._finders.delete(finder.id);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -77,20 +80,23 @@ export class TreeFinderTracker extends WidgetTracker<TreeFinderSidebar> {
     return this._finders.has(drive);
   }
 
-  private _onWidgetDisposed(finder: TreeFinderSidebar) {
+  private _onWidgetDisposed(finder: TreeFinderWidget) {
     this.remove(finder);
   }
+  private _current : TreeFinderWidget;
 
-  private _finders = new Map<string, TreeFinderSidebar>();
+  private _finders = new Map<string, TreeFinderWidget>();
 }
 
 export class TreeFinderWidget extends DragDropWidget {
   constructor({
     app,
     columns,
+    url,
     rootPath = "",
     translator,
     settings,
+    preferredDir
   }: TreeFinderWidget.IOptions) {
     const { commands, serviceManager: { contents } } = app;
 
@@ -109,7 +115,9 @@ export class TreeFinderWidget extends DragDropWidget {
     this._commands = commands;
     this._expanding =  new Map<string, number>();
     this._columns = columns;
+    this.url = url;
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
+    this.preferredDir = preferredDir;
     this._initialLoad = true;
 
     this._readyDelegate = new PromiseDelegate<void>();
@@ -440,7 +448,7 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   protected evtKeydown(event: KeyboardEvent): void {
-    // handle any keys unaffacted by renaming status above this check:
+    // handle any keys unaffected by renaming status above this check:
     if (this.parent?.node.classList.contains("jfs-mod-renaming")) {
       return;
     }
@@ -571,7 +579,9 @@ export class TreeFinderWidget extends DragDropWidget {
   }
 
   contentsProxy: ContentsProxy;
+  url: string;
   rootPath: string;
+  preferredDir: string;
   private _columns: Array<keyof ContentsProxy.IJupyterContentRow>;
   settings: ISettingRegistry.ISettings | undefined;
   uploader: Uploader | undefined;
@@ -591,96 +601,15 @@ export namespace TreeFinderWidget {
   export interface IOptions {
     app: JupyterFrontEnd;
     columns: Array<keyof ContentsProxy.IJupyterContentRow>;
+    url: string;
     rootPath: string;
 
     translator?: ITranslator;
     settings?: ISettingRegistry.ISettings;
+    preferredDir?: string;
   }
 }
 
-export class TreeFinderSidebar extends Widget {
-  constructor({
-    app,
-    columns,
-    url,
-    rootPath = "",
-    caption = "TreeFinder",
-    id = "jupyterlab-tree-finder",
-    settings,
-    preferredDir,
-  }: TreeFinderSidebar.IOptions) {
-    super();
-    console.info(`Creating TreeFinderSidebar widget for url=${url}`)
-    this.id = id;
-    this.node.classList.add("jfs-mod-notRenaming");
-    this.url = url;
-    this.title.icon = fileTreeIcon;
-    this.title.caption = caption;
-    this.addClass("jp-tree-finder-sidebar");
-
-    this.toolbar = new Toolbar();
-    this.toolbar.addClass("jp-tree-finder-toolbar");
-    this.preferredDir = preferredDir;
-
-    this.treefinder = new TreeFinderWidget({ app, rootPath, columns, settings });
-
-    this.layout = new PanelLayout();
-    (this.layout as PanelLayout).addWidget(this.toolbar);
-    (this.layout as PanelLayout).addWidget(this.treefinder);
-  }
-
-  restore() { // restore expansion prior to rebuild
-    void this.treefinder.ready.then(() => this.treefinder.refresh());
-  }
-
-  async download(path: string, folder: boolean): Promise<void> {
-    if (folder) {
-      // const zip = new JSZip();
-      // await this.wrapFolder(zip, path); // folder packing
-      // // generate and save zip, reset path
-      // path = PathExt.basename(path);
-      // writeZipFile(zip, path);
-    } else {
-      const url = await this.treefinder.contentsProxy.downloadUrl(path);
-      const element = document.createElement("a");
-      element.setAttribute("href", url);
-      element.setAttribute("download", "");
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    }
-  }
-
-  // async wrapFolder(zip: JSZip, path: string) {
-  //   const base = this.cm.get(this.basepath + path);
-  //   const next = base.then(async res => {
-  //     if (res.type === "directory") {
-  //       const new_folder = zip.folder(res.name);
-  //       for (const c in res.content) {
-  //         await this.wrapFolder(new_folder, res.content[c].path);
-  //       }
-  //     } else {
-  //       zip.file(res.name, res.content);
-  //     }
-  //   });
-  //   await next;
-  // }
-
-  protected onBeforeShow(msg: any): void {
-    this.treefinder.refresh();
-    this.treefinder.draw();
-  }
-
-  protected onResize(msg: any): void {
-    this.treefinder.draw();
-  }
-
-  preferredDir: string | undefined;
-  toolbar: Toolbar;
-  treefinder: TreeFinderWidget;
-
-  readonly url: string;
-}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TreeFinderSidebar {
@@ -689,101 +618,52 @@ export namespace TreeFinderSidebar {
   export const tracker = new TreeFinderTracker({ namespace });
   export const clipboard = new JupyterClipboard(tracker);
 
-  export interface IOptions {
-    app: JupyterFrontEnd;
-    columns: Array<keyof ContentsProxy.IJupyterContentRow>;
-    url: string;
-    rootPath?: string;
-    caption?: string;
-    id?: string;
-    translator?: ITranslator;
-    settings?: ISettingRegistry.ISettings;
-    preferredDir?: string;
-  }
+  // TODO these buttons would be nice on the dm_filetree panel
+  export function sidebar() {
+    
+    // const new_file_button = new ToolbarButton({
+    //   icon: newFolderIcon,
+    //   onClick: () => {
+    //     void app.commands.execute((commandIDs.create_folder));
+    //   },
+    //   tooltip: "New Folder",
+    // });
 
-  export interface ISidebarProps extends IOptions {
-    manager: IDocumentManager;
-    paths: JupyterFrontEnd.IPaths;
-    resolver: IWindowResolver;
-    restorer: ILayoutRestorer;
-    router: IRouter;
-    side?: string;
-    settings?: ISettingRegistry.ISettings;
-  }
-
-  export function sidebarFromResource(resource: IFSResource, props: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
-    return sidebar({
-      ...props,
-      rootPath: resource.drive,
-      caption: `${resource.name}\nFile Tree`,
-      id: idFromResource(resource),
-      preferredDir: resource.preferred_dir,
-      url: resource.url,
-    });
-  }
-
-  export function sidebar({
-    app,
-    // manager,
-    // paths,
-    // resolver,
-    // router,
-    restorer,
-    url,
-    columns,
-    settings,
-    preferredDir,
-
-    rootPath = "",
-    caption = "TreeFinder",
-    id = "jupyterlab-tree-finder",
-    side = "left",
-  }: TreeFinderSidebar.ISidebarProps): TreeFinderSidebar {
-    const widget = new TreeFinderSidebar({ app, rootPath, columns, caption, id, url, settings, preferredDir });
-    void widget.treefinder.ready.then(() => tracker.add(widget));
-    app.shell.add(widget, side);
-
-    const new_file_button = new ToolbarButton({
-      icon: newFolderIcon,
-      onClick: () => {
-        void app.commands.execute((commandIDs.create_folder));
-      },
-      tooltip: "New Folder",
-    });
-    const uploader_button = new UploadButton({ uploader: widget.treefinder.ready.then(() => widget.treefinder.uploader!) });
-    void widget.treefinder.ready.then(() => {
-      widget.treefinder.uploader!.uploadCompleted.connect((sender, args) => {
-        // Do not select/scroll into view: Upload might be slow, so user might have moved on!
-        // We do however want to expand the folder
-        void revealPath(widget.treefinder.model!, args.path).then(() =>
-          widget.treefinder.model!.flatten()
-        );
-      });
-    });
-    const refresh_button = new ToolbarButton({
-      icon: refreshIcon,
-      onClick: () => {
-        void app.commands.execute(commandIDs.refresh);
-      },
-      tooltip: "Refresh",
-    });
+    // const uploader_button = new UploadButton({ uploader: widget.treefinder.ready.then(() => widget.treefinder.uploader!) });
+    
+    // void widget.treefinder.ready.then(() => {
+    //   widget.treefinder.uploader!.uploadCompleted.connect((sender, args) => {
+    //     // Do not select/scroll into view: Upload might be slow, so user might have moved on!
+    //     // We do however want to expand the folder
+    //     void revealPath(widget.treefinder.model!, args.path).then(() =>
+    //       widget.treefinder.model!.flatten()
+    //     );
+    //   });
+    // });
+    // const refresh_button = new ToolbarButton({
+    //   icon: refreshIcon,
+    //   onClick: () => {
+    //     void app.commands.execute(commandIDs.refresh);
+    //   },
+    //   tooltip: "Refresh",
+    // });
 
 
-    widget.toolbar.addItem("new file", new_file_button);
-    widget.toolbar.addItem("upload", uploader_button);
-    widget.toolbar.addItem("refresh", refresh_button);
+    // widget.toolbar.addItem("new file", new_file_button);
+    // widget.toolbar.addItem("upload", uploader_button);
+    // widget.toolbar.addItem("refresh", refresh_button);
 
-    if (preferredDir) {
-      void widget.treefinder.ready.then(async () => {
-        let path = preferredDir.split("/");
-        if (preferredDir.startsWith("/")) {
-          path = path.slice(1);
-        }
-        path.unshift(rootPath);
-        await openDirRecursive(widget.treefinder.model!, path);
-      });
-    }
-
+    // if (preferredDir) {
+    //   void widget.treefinder.ready.then(async () => {
+    //     let path = preferredDir.split("/");
+    //     if (preferredDir.startsWith("/")) {
+    //       path = path.slice(1);
+    //     }
+    //     path.unshift(rootPath);
+    //     await openDirRecursive(widget.treefinder.model!, path);
+    //   });
+    // };
+  
     // // remove context highlight on context menu exit
     // document.ondblclick = () => {
     //   app.commands.execute((widget.commandIDs.set_context + ":" + widget.id), { path: "" });
@@ -798,10 +678,10 @@ export namespace TreeFinderSidebar {
 
     // return a disposable containing all disposables associated
     // with this widget, ending with the widget itself
-    return widget;
-  }
 
-  export async function doRename(widget: TreeFinderSidebar, oldContent: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow> {
+  };
+
+  export async function doRename(widget: TreeFinderWidget, oldContent: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow> {
     if (widget.node.classList.contains("jfs-mod-renaming")) {
       return oldContent.row;
     }
@@ -828,7 +708,7 @@ export namespace TreeFinderSidebar {
       const suffix = textNode.textContent!.endsWith("/") ? "/" : "";
       let newContent;
       try {
-        newContent = await widget.treefinder.contentsProxy.rename(oldPath + suffix, newPath + suffix);
+        newContent = await widget.contentsProxy.rename(oldPath + suffix, newPath + suffix);
       } catch (error) {
         if (error !== "File not renamed") {
           void showErrorMessage(
@@ -868,4 +748,38 @@ export namespace TreeFinderSidebar {
       }
     }
   }
+
+  export async function download(treefinder: TreeFinderWidget, path: string, folder: boolean): Promise<void> {
+      if (folder) {
+        // const zip = new JSZip();
+        // await this.wrapFolder(zip, path); // folder packing
+        // // generate and save zip, reset path
+        // path = PathExt.basename(path);
+        // writeZipFile(zip, path);
+      } else {
+        const url = await treefinder.contentsProxy.downloadUrl(path);
+        const element = document.createElement("a");
+        element.setAttribute("href", url);
+        element.setAttribute("download", "");
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+      }
+  }
+
+  // async wrapFolder(zip: JSZip, path: string) {
+  //   const base = this.cm.get(this.basepath + path);
+  //   const next = base.then(async res => {
+  //     if (res.type === "directory") {
+  //       const new_folder = zip.folder(res.name);
+  //       for (const c in res.content) {
+  //         await this.wrapFolder(new_folder, res.content[c].path);
+  //       }
+  //     } else {
+  //       zip.file(res.name, res.content);
+  //     }
+  //   });
+  //   await next;
+  // }
+
 }

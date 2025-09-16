@@ -11,17 +11,17 @@ import { Drive } from "@jupyterlab/services";
 import { ClipboardModel, ContentsModel, IContentRow, Path } from "tree-finder";
 
 import type { ContentsProxy } from "./contents_proxy";
-import type { TreeFinderSidebar } from "./treefinder";
+import type { TreeFinderWidget } from "./treefinder";
 import { getRefreshTargets } from "./contents_utils";
 
 export class JupyterClipboard {
-  constructor(tracker: WidgetTracker<TreeFinderSidebar>) {
+  constructor(tracker: WidgetTracker<TreeFinderWidget>) {
     this._tracker = tracker;
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this._model.deleteSub.subscribe(async memo => {
       await Promise.all(memo.map(s => this._onDelete(s)));
-      const contentsModel = this._tracker.currentWidget!.treefinder.model!;
+      const contentsModel = this._tracker.currentWidget!.model!;
       const toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
         memo as ContentsProxy.IJupyterContentRow[],
         contentsModel.root,
@@ -35,7 +35,7 @@ export class JupyterClipboard {
       const destPath = destination.kind === "dir" ? destination.path : destination.path.slice(0, -1);
       const destPathstr = Path.fromarray(destPath);
       await Promise.all(memo.map(s => this._onPaste(s, destPathstr, doCut)));
-      const contentsModel = this._tracker.currentWidget!.treefinder.model!;
+      const contentsModel = this._tracker.currentWidget!.model!;
       let toRefresh = getRefreshTargets<ContentsProxy.IJupyterContentRow>(
         [destination] as ContentsProxy.IJupyterContentRow[],
         contentsModel.root,
@@ -59,7 +59,7 @@ export class JupyterClipboard {
   }
 
   refresh<T extends IContentRow>(tm?: ContentsModel<T>, memo?: T[]) {
-    tm ??= this._tracker.currentWidget!.treefinder.model as any as ContentsModel<T>;
+    tm ??= this._tracker.currentWidget!.model as any as ContentsModel<T>;
     this.model.refresh(tm, memo!);
   }
 
@@ -94,7 +94,7 @@ export class JupyterClipboard {
   }
 
   protected _model = new ClipboardModel();
-  protected _tracker: WidgetTracker<TreeFinderSidebar>;
+  protected _tracker: WidgetTracker<TreeFinderWidget>;
 
   private _drive = new Drive();
 }

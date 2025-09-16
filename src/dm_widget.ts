@@ -58,7 +58,7 @@ export class dmWidget extends Widget {
     
     // TODO buttons / actions
     const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this._fbWidget_l);
-    this._fbWidget_l.toolbar.addItem("selectEndpointBtn", tb_selectEndpointButton_l);
+    this._fbWidget_l.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_l);
 
     this._fbPanel_l = new SplitPanel({
       orientation: 'vertical',
@@ -73,7 +73,7 @@ export class dmWidget extends Widget {
     
     // TODO buttons / actions
     const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this._fbWidget_r);
-    this._fbWidget_r.toolbar.addItem("selectEndpointBtn", tb_selectEndpointButton_r);
+    this._fbWidget_r.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_r);
 
     this._transferListWidget = new dm_TransferList();
 
@@ -124,7 +124,7 @@ export class dmWidget extends Widget {
     });
     _wrapper1.title.label = "Transfers";
     _wrapper1.addWidget(this._transferListWidget);
-    const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "refresh", "Refresh list of transfers");
+    const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "Refresh list of transfers");
     _wrapper1.addWidget(refresh_transferlist_button);
     _wrapper1.setRelativeSizes([80,20]);
     let _wrapper = new DockPanel();

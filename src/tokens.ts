@@ -1,7 +1,7 @@
 
 import { WidgetTracker } from "@jupyterlab/apputils";
 import { Token } from "@lumino/coreutils";
-import { TreeFinderSidebar } from "./treefinder";
+import { TreeFinderWidget } from "./treefinder";
 
 export const ITreeFinderMain = new Token<ITreeFinderMain>(
   "@jupyterlab/filebrowser:IFileBrowserFactory"
@@ -14,5 +14,5 @@ export interface ITreeFinderMain {
   /**
    * The widget tracker that tracks tree finders.
    */
-  readonly tracker: WidgetTracker<TreeFinderSidebar>;
+  readonly tracker: WidgetTracker<TreeFinderWidget>;
 }

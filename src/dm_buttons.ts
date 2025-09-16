@@ -6,7 +6,8 @@ import {
   } from '@jupyterlab/apputils';
   
 import { 
-    addIcon
+    addIcon,
+	refreshIcon
   } from '@jupyterlab/ui-components';
 
 import { requestAPI } from './dm_handler';
@@ -118,9 +119,9 @@ export class dm_CopyButton extends ToolbarButton {
  */
 export class dm_RefreshButton extends ToolbarButton {
 
-	constructor(transferlist: dm_TransferList, label:string, tooltip:string){
+	constructor(transferlist: dm_TransferList, tooltip:string){
 		super( {
-          label: label,
+		  icon: refreshIcon,
 	      tooltip: tooltip,
 	      onClick: () => { this.handle_click(transferlist); }
 	    });
