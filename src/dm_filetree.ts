@@ -33,6 +33,7 @@ export class dm_FileTreePanel extends Widget {
   ){
     super();
     this.addClass("jp-tree-finder-sidebar");
+    this.node.classList.add("jfs-mod-notRenaming");
     this.app = app;
     this.settings = settings;
     this.drive = null;

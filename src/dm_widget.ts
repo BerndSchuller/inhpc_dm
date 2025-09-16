@@ -173,24 +173,30 @@ export function activate_dm(
   console.log('Initialising InHPC data management front-end.');
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
-  const dmwidget = new dmWidget(app, settings);
+  
+  // Tracker holding the widget state
+  let tracker_dm = new WidgetTracker<MainAreaWidget<dmWidget>>({
+    namespace: 'inhpc_dm'
+  });
+  widget_dm = tracker_dm.currentWidget
 
   let cmd = {
     label: 'InHPC - Data Management dual browser view',
     icon: folderIcon,
     execute: () => {      
+      widget_dm = tracker_dm.currentWidget
+
       if (! widget_dm || widget_dm.isDisposed) {
 		// Create a new widget if one does not exist
+        const dmwidget = new dmWidget(app, settings);
         dmwidget.id = 'dmwidget_id';
         widget_dm = new MainAreaWidget({ content: dmwidget });
         widget_dm.id = 'inhpc-datamanagement';
         widget_dm.title.label = 'Data Management';
         widget_dm.title.closable = true;
-      }
-      if (!tracker_dm.has(widget_dm)) {
-        // Track the state of the widget for later restoration
         tracker_dm.add(widget_dm);
       }
+
       if (!widget_dm.isAttached) {
         // Attach the widget to the main work area if it's not there
         app.shell.add(widget_dm, 'main');
@@ -212,13 +218,9 @@ export function activate_dm(
     });
   }
 
-  // Track and restore the widget state
-  let tracker_dm = new WidgetTracker<MainAreaWidget<dmWidget>>({
-    namespace: 'inhpc_dm'
-  });
-  restorer.restore(tracker_dm, {
-    command: command_dm,
-    name: () => 'inhpc_dm'
-  });
- 
+  // restorer.restore(tracker_dm, {
+  //    command: command_dm,
+  //    name: () => 'inhpc_dm'
+  // });
+
 }
