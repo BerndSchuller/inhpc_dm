@@ -1,7 +1,8 @@
 import { ILayoutRestorer, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
-import { ICommandPalette } from "@jupyterlab/apputils";
+import { ICommandPalette, IThemeManager } from "@jupyterlab/apputils";
 import { ILauncher} from '@jupyterlab/launcher';
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import { folderIcon, fileIcon } from "@jupyterlab/ui-components";
 
 import { IFSOptions, IFSResource, IFSSettingsResource } from "./filesystem";
 import { initResources } from "./resources";
@@ -18,14 +19,15 @@ let MY_ID = 'inhpc_dm:plugin';
 const extension: JupyterFrontEndPlugin<void> = {
   id: MY_ID,
   autoStart: true,
-  requires: [ISettingRegistry,ICommandPalette, ILayoutRestorer, ILauncher],
+  requires: [ISettingRegistry,ICommandPalette, ILayoutRestorer, ILauncher, IThemeManager],
   activate: (
     app: JupyterFrontEnd, 
     settingRegistry: ISettingRegistry,
     palette: ICommandPalette, 
     restorer: ILayoutRestorer,
-    launcher: ILauncher
-)=>  {  
+    launcher: ILauncher,
+    themeManager: IThemeManager
+)=>  {
     console.log('JupyterLab extension InHPC data management activating.');
 
     async function handleSettingsUpdate(app: JupyterFrontEnd, settings: ISettingRegistry.ISettings): Promise<void> {
@@ -54,6 +56,33 @@ const extension: JupyterFrontEndPlugin<void> = {
     } catch (error) {
       console.warn(`Failed to load settings for the inhpc_dm extension.\n${error}`);
     }
+
+    // Inject lab icons
+    const style = document.createElement("style");
+    style.setAttribute("id", "jupyter-fs-icon-inject");
+
+    // Hackish, but needed since tree-finder insists on pseudo elements for icons.
+    function iconStyleContent(folderStr: string, fileStr: string) {
+      // Note: We aren't able to style the hover/select colors with this.
+      return `
+      .jp-tree-finder {
+        --tf-dir-icon: url('data:image/svg+xml,${encodeURIComponent(folderStr)}');
+        --tf-file-icon: url('data:image/svg+xml,${encodeURIComponent(fileStr)}');
+      }
+      `;
+    }
+
+    themeManager.themeChanged.connect(() => {
+      // Update SVG icon fills (since we put them in pseudo-elements we cannot style with CSS)
+      const primary = getComputedStyle(document.documentElement).getPropertyValue("--jp-ui-font-color1");
+      style.textContent = iconStyleContent(
+        folderIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`),
+        fileIcon.svgstr.replace(/fill="([^"]{0,7})"/, `fill="${primary}"`)
+      );
+    });
+
+    style.textContent = iconStyleContent(folderIcon.svgstr, fileIcon.svgstr);
+    document.head.appendChild(style);
   }
 };
 

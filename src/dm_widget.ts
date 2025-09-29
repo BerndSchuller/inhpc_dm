@@ -58,7 +58,7 @@ export class dmWidget extends Widget {
     
     // TODO buttons / actions
     const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this._fbWidget_l);
-    this._fbWidget_l.toolbar.addItem("selectEndpointBtn", tb_selectEndpointButton_l);
+    this._fbWidget_l.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_l);
 
     this._fbPanel_l = new SplitPanel({
       orientation: 'vertical',
@@ -73,7 +73,7 @@ export class dmWidget extends Widget {
     
     // TODO buttons / actions
     const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this._fbWidget_r);
-    this._fbWidget_r.toolbar.addItem("selectEndpointBtn", tb_selectEndpointButton_r);
+    this._fbWidget_r.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_r);
 
     this._transferListWidget = new dm_TransferList();
 
@@ -124,7 +124,7 @@ export class dmWidget extends Widget {
     });
     _wrapper1.title.label = "Transfers";
     _wrapper1.addWidget(this._transferListWidget);
-    const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "refresh", "Refresh list of transfers");
+    const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "Refresh list of transfers");
     _wrapper1.addWidget(refresh_transferlist_button);
     _wrapper1.setRelativeSizes([80,20]);
     let _wrapper = new DockPanel();
@@ -173,24 +173,30 @@ export function activate_dm(
   console.log('Initialising InHPC data management front-end.');
   let widget_dm: MainAreaWidget<dmWidget>;
   const command_dm: string = 'inhpc:opendm';
-  const dmwidget = new dmWidget(app, settings);
+  
+  // Tracker holding the widget state
+  let tracker_dm = new WidgetTracker<MainAreaWidget<dmWidget>>({
+    namespace: 'inhpc_dm'
+  });
+  widget_dm = tracker_dm.currentWidget
 
   let cmd = {
     label: 'InHPC - Data Management dual browser view',
     icon: folderIcon,
     execute: () => {      
+      widget_dm = tracker_dm.currentWidget
+
       if (! widget_dm || widget_dm.isDisposed) {
 		// Create a new widget if one does not exist
+        const dmwidget = new dmWidget(app, settings);
         dmwidget.id = 'dmwidget_id';
         widget_dm = new MainAreaWidget({ content: dmwidget });
         widget_dm.id = 'inhpc-datamanagement';
         widget_dm.title.label = 'Data Management';
         widget_dm.title.closable = true;
-      }
-      if (!tracker_dm.has(widget_dm)) {
-        // Track the state of the widget for later restoration
         tracker_dm.add(widget_dm);
       }
+
       if (!widget_dm.isAttached) {
         // Attach the widget to the main work area if it's not there
         app.shell.add(widget_dm, 'main');
@@ -212,13 +218,9 @@ export function activate_dm(
     });
   }
 
-  // Track and restore the widget state
-  let tracker_dm = new WidgetTracker<MainAreaWidget<dmWidget>>({
-    namespace: 'inhpc_dm'
-  });
-  restorer.restore(tracker_dm, {
-    command: command_dm,
-    name: () => 'inhpc_dm'
-  });
- 
+  // restorer.restore(tracker_dm, {
+  //    command: command_dm,
+  //    name: () => 'inhpc_dm'
+  // });
+
 }

@@ -30,7 +30,7 @@ import { JupyterClipboard } from "./clipboard";
 import { TreeFinderSidebar } from "./treefinder";
 import type { IFSResource } from "./filesystem";
 import type { ContentsProxy } from "./contents_proxy";
-import type { TreeFinderTracker } from "./treefinder";
+import { TreeFinderTracker } from "./treefinder";
 import { getContentParent, getRefreshTargets, openDirRecursive, revealAndSelectPath } from "./contents_utils";
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { showErrorMessage } from "@jupyterlab/apputils";
@@ -47,7 +47,6 @@ export const commandNames = [
   "download",
   "create_folder",
   "create_file",
-  // "navigate",
   "copyFullPath",
   "copyRelativePath",
   "restore",
@@ -79,7 +78,7 @@ const currentWidgetSelectionIsWritable = (tracker: TreeFinderTracker): boolean =
   if (!tracker.currentWidget) {
     return false;
   }
-  const selection = tracker.currentWidget.treefinder.model?.selection;
+  const selection = tracker.currentWidget.model?.selection;
   if (selection) {
     return selection.every((x: Content<ContentsProxy.IJupyterContentRow>) => x.row.writable);
   }
@@ -112,7 +111,7 @@ export function createStaticCommands(
 ): IDisposable {
   return [
     app.commands.addCommand(commandIDs.copy, {
-      execute: args => clipboard.model.copySelection(tracker.currentWidget!.treefinder.model!),
+      execute: args => clipboard.model.copySelection(tracker.currentWidget!.model!),
       icon: copyIcon,
       label: "Copy",
       isVisible: () => {
@@ -121,7 +120,7 @@ export function createStaticCommands(
           return false;
         }
         // Copy of folders are unsupported
-        if (widget.treefinder.model?.selection.some(v => v.row.kind === "dir")) {
+        if (widget.model?.selection.some(v => v.row.kind === "dir")) {
           return false;
         }
         return true;
@@ -129,14 +128,14 @@ export function createStaticCommands(
       isEnabled: () => !!tracker.currentWidget,
     }),
     app.commands.addCommand(commandIDs.cut, {
-      execute: args => clipboard.model.cutSelection(tracker.currentWidget!.treefinder.model!),
+      execute: args => clipboard.model.cutSelection(tracker.currentWidget!.model!),
       icon: cutIcon,
       label: "Cut",
       isEnabled: () => currentWidgetSelectionIsWritable(tracker),
     }),
     app.commands.addCommand(commandIDs.delete, {
       execute: async args => {
-        const treefinder = tracker.currentWidget!.treefinder;
+        const treefinder = tracker.currentWidget;
         const model = treefinder.model!;
         const message =
         model.selection.length === 1
@@ -162,12 +161,12 @@ export function createStaticCommands(
       isEnabled: () => currentWidgetSelectionIsWritable(tracker),
     }),
     app.commands.addCommand(commandIDs.open, {
-      execute: args => tracker.currentWidget!.treefinder.model!.openSub.next(tracker.currentWidget!.treefinder.selection?.map(c => c.row)),
+      execute: args => tracker.currentWidget!.model!.openSub.next(tracker.currentWidget!.selection?.map(c => c.row)),
       label: "Open",
       isEnabled: () => !!tracker.currentWidget,
     }),
     app.commands.addCommand(commandIDs.paste, {
-      execute: args => clipboard.model.pasteSelection(tracker.currentWidget!.treefinder.model!),
+      execute: args => clipboard.model.pasteSelection(tracker.currentWidget!.model),
       icon: pasteIcon,
       label: "Paste",
       isEnabled: () => !!tracker.currentWidget,
@@ -175,9 +174,9 @@ export function createStaticCommands(
     app.commands.addCommand(commandIDs.rename, {
       execute: args => {
         const widget = tracker.currentWidget!;
-        const oldContent = widget.treefinder.selection![0];
+        const oldContent = widget.selection![0];
         void TreeFinderSidebar.doRename(widget, oldContent).then(newContent => {
-          widget.treefinder.model?.renamerSub.next( { name: newContent.name, target: oldContent } );
+          widget.model?.renamerSub.next( { name: newContent.name, target: oldContent } );
           // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
           oldContent.row = newContent;
         });
@@ -189,19 +188,19 @@ export function createStaticCommands(
     app.commands.addCommand(commandIDs.download, {
       execute: async args => {
         const widget = tracker.currentWidget!;
-        const selection = widget.treefinder.selection!;
-        await Promise.allSettled(selection.map(s => widget.download(s.pathstr, s.hasChildren)));
+        const selection = widget.selection!;
+        await Promise.allSettled(selection.map(s => TreeFinderSidebar.download(widget, s.pathstr, s.hasChildren)));
       },
       icon: downloadIcon,
       label: "Download",
       isEnabled: () => !!(
-        tracker.currentWidget?.treefinder.model?.selection?.some(s => !s.hasChildren)
+        tracker.currentWidget?.model?.selection?.some(s => !s.hasChildren)
       ),
     }),
     app.commands.addCommand(commandIDs.create_folder, {
       execute: async args =>  {
         const widget = tracker.currentWidget!;
-        const model = widget.treefinder.model!;
+        const model = widget.model!;
         let target = model.selectedLast ?? model.root;
         if (!target.hasChildren) {
           target = await getContentParent(target, model.root);
@@ -209,7 +208,7 @@ export function createStaticCommands(
         const path = Path.fromarray(target.row.path);
         let row: ContentsProxy.IJupyterContentRow;
         try {
-          row = await widget.treefinder.contentsProxy.newUntitled({
+          row = await widget.contentsProxy.newUntitled({
             type: "directory",
             path,
           });
@@ -222,7 +221,7 @@ export function createStaticCommands(
         // Is this really needed?
         model.refreshSub.next(getRefreshTargets([target.row], model.root));
         // Scroll into view if not visible
-        await TreeFinderSidebar.scrollIntoView(widget.treefinder, content.pathstr);
+        await TreeFinderSidebar.scrollIntoView(widget, content.pathstr);
         const newContent = await TreeFinderSidebar.doRename(widget, content);
         model.renamerSub.next( { name: newContent.name, target: content } );
         // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
@@ -235,7 +234,7 @@ export function createStaticCommands(
     app.commands.addCommand(commandIDs.create_file, {
       execute: async args =>  {
         const widget = tracker.currentWidget!;
-        const model = widget.treefinder.model!;
+        const model = widget.model!;
         let target = model.selectedLast ?? model.root;
         if (!target.hasChildren) {
           target = await getContentParent(target, model.root);
@@ -243,7 +242,7 @@ export function createStaticCommands(
         const path = Path.fromarray(target.row.path);
         let row: ContentsProxy.IJupyterContentRow;
         try {
-          row = await widget.treefinder.contentsProxy.newUntitled({
+          row = await widget.contentsProxy.newUntitled({
             type: "file",
             path,
           });
@@ -256,7 +255,7 @@ export function createStaticCommands(
         // Is this really needed?
         model.refreshSub.next(getRefreshTargets([target.row], model.root));
         // Scroll into view if not visible
-        await TreeFinderSidebar.scrollIntoView(widget.treefinder, content.pathstr);
+        await TreeFinderSidebar.scrollIntoView(widget, content.pathstr);
         const newContent = await TreeFinderSidebar.doRename(widget, content);
         model.renamerSub.next( { name: newContent.name, target: content } );
         // TODO: Model state of TreeFinderWidget should be updated by renamerSub process.
@@ -269,9 +268,9 @@ export function createStaticCommands(
     app.commands.addCommand(commandIDs.refresh, {
       execute: args => {
         if (args["selection"]) {
-          clipboard.refreshSelection(tracker.currentWidget!.treefinder.model!);
+          clipboard.refreshSelection(tracker.currentWidget!.model!);
         } else {
-          clipboard.refresh(tracker.currentWidget!.treefinder.model);
+          clipboard.refresh(tracker.currentWidget!.model);
         }
       },
       icon: refreshIcon,
@@ -282,7 +281,7 @@ export function createStaticCommands(
       execute: async args => {
         const widget = tracker.currentWidget!;
         const trimEnd = (path: string): string => path.trimEnd().replace(/\/+$/, "");
-        const fullPaths = _getRelativePaths(widget.treefinder.selection!).map(relativePath => [trimEnd(widget.url ?? ""), relativePath].join("/"));
+        const fullPaths = _getRelativePaths(widget.selection!).map(relativePath => [trimEnd(widget.url ?? ""), relativePath].join("/"));
         await navigator.clipboard.writeText(fullPaths.join("\n"));
       },
       label: "Copy Full Path",
@@ -291,7 +290,7 @@ export function createStaticCommands(
     app.commands.addCommand(commandIDs.copyRelativePath, {
       execute: async args => {
         const widget = tracker.currentWidget!;
-        const relativePaths = _getRelativePaths(widget.treefinder.selection!);
+        const relativePaths = _getRelativePaths(widget.selection!);
         await navigator.clipboard.writeText(relativePaths.join("\n"));
       },
       label: "Copy Relative Path",
@@ -307,17 +306,16 @@ export function createStaticCommands(
       execute: async args => {
         const rootPath = args.rootPath as string;
         const dirsToOpen = rootPath.split("/");
-        const sidebar = tracker.findByDrive(args.id as string);
-        if (!sidebar) {
+        const treefinderwidget = tracker.findByDrive(args.id as string);
+        if (!treefinderwidget) {
           throw new Error(`Could not restore JupyterFS browser: ${args.id}`);
         }
-        const treefinderwidget = sidebar.treefinder;
         const model = treefinderwidget.model!;
 
         // If preferredDir not specified, proceed with the restore
-        if (!sidebar.preferredDir) {
+        if (!treefinderwidget.preferredDir) {
           await openDirRecursive(model, dirsToOpen);
-          await tracker.save(sidebar);
+          await tracker.save(treefinderwidget);
         }
       },
     }),
@@ -325,7 +323,6 @@ export function createStaticCommands(
     set.add(d); return set;
   }, new DisposableSet());
 }
-
 
 /**
  * Create commands whose count/IDs depend on settings/resources
