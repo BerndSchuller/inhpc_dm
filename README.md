@@ -12,7 +12,44 @@ WORK IN PROGRESS!
 
 This extension consists of a front-end part (basically an enhanced filebrowser) and a back-end (server) part,
 that has the job of mounting remote file systems and invoking transfer commands.
+The InHPC datamanagement extension is based on Jupyter-FS and pyfilesystem.
 
+Remote filesystems can be defined via the plugin settings, and can be selected in the frontend.
+Then, operations on these remote file systems can be performed.
+
+
+## Installation
+
+The extension can be installed from PyPI with
+
+```
+pip install -U inhpc_dm
+```
+
+To enable the extension, you have two options.
+
+The first option is to locate the Jupyter server config file, e.g
+`~/.jupyter/jupyter_server_config.json`, and add the following
+
+```    
+    "ServerApp": {
+      "contents_manager_class": "inhpc_dm.metamanager.MetaManager"
+    }
+```
+
+
+Alternatively, launch Jupyter with an argument
+    
+```
+    --ServerApp.contents_manager_class=inhpc_dm.metamanager.MetaManager
+```
+
+(if this is unclear please refer to the Jupyter documentation)
+
+
+## Usage
+
+TBD
 
 ## Contributing
 
