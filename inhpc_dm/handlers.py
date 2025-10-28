@@ -16,7 +16,6 @@ import inhpc_dm.uftp_handler as uftp_handler
 import inhpc_dm.tasks as tasks
 
 from pyunicore.uftp.uftpfs import UFTPFS
-#from pyunicore.uftp.uftpmountfs import UFTPMOUNTFS
 
 class AbstractDMHandler(JupyterHandler):
     """ Abstract base class for dm-tool handlers """

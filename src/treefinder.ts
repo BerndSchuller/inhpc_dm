@@ -610,7 +610,6 @@ export namespace TreeFinderWidget {
   }
 }
 
-
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TreeFinderSidebar {
   const namespace = "jupyter-fs-treefinder";
@@ -618,40 +617,7 @@ export namespace TreeFinderSidebar {
   export const tracker = new TreeFinderTracker({ namespace });
   export const clipboard = new JupyterClipboard(tracker);
 
-  // TODO these buttons would be nice on the dm_filetree panel
-  export function sidebar() {
-    
-    // const new_file_button = new ToolbarButton({
-    //   icon: newFolderIcon,
-    //   onClick: () => {
-    //     void app.commands.execute((commandIDs.create_folder));
-    //   },
-    //   tooltip: "New Folder",
-    // });
-
-    // const uploader_button = new UploadButton({ uploader: widget.treefinder.ready.then(() => widget.treefinder.uploader!) });
-    
-    // void widget.treefinder.ready.then(() => {
-    //   widget.treefinder.uploader!.uploadCompleted.connect((sender, args) => {
-    //     // Do not select/scroll into view: Upload might be slow, so user might have moved on!
-    //     // We do however want to expand the folder
-    //     void revealPath(widget.treefinder.model!, args.path).then(() =>
-    //       widget.treefinder.model!.flatten()
-    //     );
-    //   });
-    // });
-    // const refresh_button = new ToolbarButton({
-    //   icon: refreshIcon,
-    //   onClick: () => {
-    //     void app.commands.execute(commandIDs.refresh);
-    //   },
-    //   tooltip: "Refresh",
-    // });
-
-
-    // widget.toolbar.addItem("new file", new_file_button);
-    // widget.toolbar.addItem("upload", uploader_button);
-    // widget.toolbar.addItem("refresh", refresh_button);
+  // TODO is this stuff useful and if yes, where to put it
 
     // if (preferredDir) {
     //   void widget.treefinder.ready.then(async () => {
@@ -676,10 +642,6 @@ export namespace TreeFinderSidebar {
     //   app.commands.execute(widget.commandIDs.refresh);
     // }, 10000);
 
-    // return a disposable containing all disposables associated
-    // with this widget, ending with the widget itself
-
-  };
 
   export async function doRename(widget: TreeFinderWidget, oldContent: Content<ContentsProxy.IJupyterContentRow>): Promise<ContentsProxy.IJupyterContentRow> {
     if (widget.node.classList.contains("jfs-mod-renaming")) {

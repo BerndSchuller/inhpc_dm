@@ -24,6 +24,8 @@ import { PanelLayout, Widget } from "@lumino/widgets";
 
 import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { commandIDs } from "./commands";
+import { revealPath } from "./contents_utils";
+import { UploadButton } from "./upload";
 
 //holds one TreeFinderWidget
 export class dm_FileTreePanel extends Widget {
@@ -57,7 +59,7 @@ export class dm_FileTreePanel extends Widget {
      
     );
 
-    const new_file_button = new ToolbarButton({
+    const new_folder_button = new ToolbarButton({
       icon: newFolderIcon,
       onClick: () => {
         TreeFinderSidebar.tracker.setCurrent(this.treefinder);
@@ -68,11 +70,16 @@ export class dm_FileTreePanel extends Widget {
        enabled: false
     });
 
+    const upload_button = new UploadButton({ uploader: null });
+    upload_button.enabled = false;
+
     this.toolbar.addItem("refresh", refresh_button);
-    this.toolbar.addItem("new file", new_file_button);
+    this.toolbar.addItem("new folder", new_folder_button);
+    this.toolbar.addItem("upload", upload_button);
 
     this._buttons.push(refresh_button);
-    this._buttons.push(new_file_button);
+    this._buttons.push(new_folder_button);
+    this._buttons.push(upload_button);
    }
 
   protected onBeforeShow(msg: any): void {
@@ -106,6 +113,16 @@ export class dm_FileTreePanel extends Widget {
     TreeFinderSidebar.tracker.add(this.treefinder);
     this._buttons.forEach(b => {
       b.enabled = true;
+      if (b instanceof UploadButton){
+        b.uploader = this.treefinder.ready.then(() => this.treefinder!.uploader!)
+        void this.treefinder.ready.then(() => {
+          this.treefinder.uploader!.uploadCompleted.connect((sender, args) => {
+            // Do not select/scroll into view: Upload might be slow, so user might have moved on!
+            // We do however want to expand the folder
+            void revealPath(this.treefinder!.model!, args.path).then(() => this.treefinder.model!.flatten());
+          });
+        });
+      }
     });
     this.update();
   }

@@ -95,7 +95,7 @@ export class UploadButton extends ToolbarButton {
     });
     this.translator = options.translator || nullTranslator;
     this._trans = this.translator.load("jupyterlab");
-    this._uploader = options.uploader;
+    this.uploader = options.uploader;
     this._input.onclick = this._onInputClicked;
     this._input.onchange = this._onInputChanged;
     this.addClass("jp-id-upload");
@@ -106,7 +106,7 @@ export class UploadButton extends ToolbarButton {
    */
   private _onInputChanged = () => {
     const files = Array.prototype.slice.call(this._input.files) as File[];
-    const pending = files.map(async file => (await this._uploader).upload(file));
+    const pending = files.map(async file => (await this.uploader).upload(file));
     void Promise.all(pending).catch(error => {
       void showErrorMessage(
         this._trans._p("showErrorMessage", "Upload Error"),
@@ -127,7 +127,7 @@ export class UploadButton extends ToolbarButton {
   protected translator: ITranslator;
   private _trans: TranslationBundle;
   private _input = Private.createUploadInput();
-  private _uploader: Promise<Uploader>;
+  uploader: Promise<Uploader>;
 }
 
 export namespace UploadButton {
@@ -143,7 +143,7 @@ export namespace UploadButton {
     label?: string;
 
     /**
-     * Pormise to uploader instance to handle upload logic
+     * Promise to uploader instance to handle upload logic
      */
     uploader: Promise<Uploader>
   }
