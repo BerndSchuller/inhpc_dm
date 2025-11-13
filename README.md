@@ -14,7 +14,7 @@ This extension consists of a front-end part (basically an enhanced filebrowser) 
 that has the job of mounting remote file systems and invoking transfer commands.
 The InHPC datamanagement extension is based on Jupyter-FS and pyfilesystem.
 
-Remote filesystems can be defined via the plugin settings, and can be selected in the frontend.
+When remote filesystems are defined via the plugin settings, they can be selected in the frontend.
 Then, operations on these remote file systems can be performed.
 
 
@@ -37,26 +37,33 @@ The first option is to locate the Jupyter server config file, e.g
     }
 ```
 
+if the file does not exist, you can create it yourself.
 
-Alternatively, launch Jupyter with an argument
+Alternatively - especially if you are using a virtual environment - launch Jupyter with the argument
     
 ```
     --ServerApp.contents_manager_class=inhpc_dm.metamanager.MetaManager
 ```
 
-(if this is unclear please refer to the Jupyter documentation)
+For example
+```
+  jupyter-lab --ServerApp.contents_manager_class=inhpc_dm.metamanager.MetaManager
+```
+
+(for more information, please refer to the Jupyter documentation)
 
 
 ## Usage
 
 ### Adding backends (remote file systems)
 
-In the Jupyter Settings editor (main menu "Settings/Settings Editor"), locate the 
+In the Jupyter Settings Editor (find it at the main menu at "Settings/Settings Editor"), locate the
 "InHPC Datamanagement" section.
 
 Under "Resources" you can now add or edit remote (or local) file system URLs.
 
 For example, to add a local directory, you can use the URL `osfs:///path/to/local/dir`
+
 
 UFTP is supported via
 
@@ -75,12 +82,14 @@ supporting different means of authentication. Choose one of:
 You can use `{{VARIABLE}}` elements in the URL, in that case the extension will open a dialog where you can enter
 value(s) for those variables..
 
-### The main InHPC datamanagement window
+### The main InHPC Datamanagement window
 
 The main window is launched either from the Launcher, or via the command palette.
 
-It is structured into two windows. For each of the sides, you can select one of the configured
-file systems by clicking the "+" icon. A context menu (right click), as well as the buttons
+It is structured into two windows. For each of the sides, you can select one of the beforehand configured
+file systems by clicking the "+" icon at the top.
+
+After selecting a file system, a context menu (right click), as well as the buttons
 in the top toolbars on each side give you access to a number of features, such as opening files,
 renaming etc.
 
