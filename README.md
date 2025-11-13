@@ -103,9 +103,9 @@ In the bottom of the view, there is a list of transfer actions with a bit of inf
 
 ### Development install
 
-Note: You will need JupyterLab and NodeJS to build the extension package.
+Note: You will need JupyterLab, npm  and NodeJS to build the extension package.
 
-To install NodeJS, you can use the package manager on your system, e.g.
+To install NodeJS and npm, you can use the package manager on your system, e.g.
 on a Debian system:
 
 ```
@@ -117,11 +117,20 @@ apt install nodejs npm
 # Clone the repo to your local environment
 # Change directory to the inhpc_dm directory
 
-# Install packages required for development
+# Install packages required for development e.g. JupyterLab
 pip install -r requirements-dev.txt
 
 # Install package
 pip install .
+
+# Start the extension by starting JupyterLab e.g. with the argument
+jupyter-lab --ServerApp.contents_manager_class=inhpc_dm.metamanager.MetaManager
+
+# You can alternatively add this in the config file (see above in the installation section)
+```
+
+optionally you can do these steps before starting JupyterLab:
+```bash
 
 # Link your development version of the extension with JupyterLab
 jupyter-labextension build .
@@ -133,7 +142,7 @@ jupyter server extension enable --user inhpc_dm
 jlpm run build
 
 # Run Jupyter lab
-jupyter-lab
+jupyter-lab --ServerApp.contents_manager_class=inhpc_dm.metamanager.MetaManager
 ```
 
 ### Uninstall
