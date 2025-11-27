@@ -2,11 +2,6 @@
   overflow: visible;
 }
 
-#inhpc-datamanagement *
-{
-  overflow: auto;
-}
-
 #settingsWidget, #infoWidget
 {
   height: 200px;
