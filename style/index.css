@@ -1,7 +1,3 @@
-.dm_Widget-main *{
-  overflow: visible;
-}
-
 #settingsWidget, #infoWidget
 {
   height: 200px;
