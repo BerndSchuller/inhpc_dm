@@ -1,6 +1,6 @@
 {
   "name": "inhpc_dm",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Data Management for InHPC-DE",
   "keywords": [
     "jupyter",
