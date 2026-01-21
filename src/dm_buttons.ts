@@ -31,31 +31,35 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 	    });
 	}
 	
+	/**
+	 * gets the list of available resources, and opens a dialog
+	 * allowing the user to select one of them
+	 */
 	async handle_click(fb: dm_FileTreePanel){
-	    // perform GET request for the list of available endpoints
-		try {
+	    try {
 			const data: Array<Object> = await requestAPI<any>('inhpc_dm/resources', {
 				'method': 'GET'});
 			console.log(data);
-			const urls: Array<string> = [];
+			const names: Array<string> = [];
+			const tooltips: Array<string> = [];
 			data.forEach( (v: any) => {
-				console.log(`Available endpoint: ${v['url']}`);
-				urls.push(v['url']);
+				names.push(v['name']);
+				tooltips.push(v['url']);
 			});
-			const selection = await selectEndpoint(urls);
-			const selected_url = selection.value;
-			if (selected_url==null)
+			const selection = await selectEndpoint(names, tooltips);
+			const name = selection.value;
+			if (name==null)
 				return;
+			let url:string;
 			let drive:string;
-			let name:string;
 			data.forEach( (v: any) => {
-				if(selected_url===v['url']){
+				if(name===v['name']){
 					drive = v['drive'];
-					name = v['name'];
+					url = v['url'];
 				}
 			});
 			console.log(`Selected drive = ${drive}`);
-			fb.setEndpoint(selected_url, drive, name);
+			fb.setEndpoint(url, drive, name);
 		} catch (reason) {
 			console.error(`Error on GET /inhpc_dm/resources: ${reason}`);
 			showErrorMessage("Error", `${reason}`);

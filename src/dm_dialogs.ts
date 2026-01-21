@@ -16,7 +16,7 @@ const INPUT_DIALOG_CLASS = 'jp-Input-Dialog';
  */
 class SelectDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
 
-  constructor(availableEndpoints: string[] = []) {
+  constructor(endpointNames: string[] = [], tooltips: string[] = []) {
     super();
     this.addClass(INPUT_DIALOG_CLASS);
     this._list = Array<HTMLInputElement>();
@@ -25,13 +25,14 @@ class SelectDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
     this._input_endpoint.id = 'jp-dialog-input-id_ep';
     
     let i=0;
-    availableEndpoints.forEach((item) => {
+    endpointNames.forEach((item) => {
       const container = document.createElement('div');
       const option = document.createElement('input');
       option.type = 'checkbox';
       option.name = 'inhpc_dm_endpoint_selection';
       option.value = item;
       option.id = 'inhpc_dm_endpoint_selection'+i;
+      option.title = tooltips[i];
       option.onclick = (e: Event)=> {
         var cb = e.target as HTMLInputElement;
         if(cb.checked){
@@ -46,6 +47,7 @@ class SelectDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
       const label = document.createElement('label');
       label.textContent = item;
       label.htmlFor = option.id;
+      label.title = tooltips[i];
       container.appendChild(option);
       container.appendChild(label);
       this._list.push(option)
@@ -78,9 +80,9 @@ export function showDialog<T>(
   return dialog.launch();
 }
 
-export function selectEndpoint(availableEndpoints: string[]): Promise<Dialog.IResult<string>> {
+export function selectEndpoint(availableEndpoints: string[], tooltips: string[]): Promise<Dialog.IResult<string>> {
   return showDialog({
-    body: new SelectDialog(availableEndpoints),
+    body: new SelectDialog(availableEndpoints, tooltips),
     buttons: [
       Dialog.cancelButton({ label: 'Cancel' }),
       Dialog.okButton({ label: 'OK' })
