@@ -7,6 +7,7 @@ import {
   
 import { 
     addIcon,
+	LabIcon,
 	refreshIcon
   } from '@jupyterlab/ui-components';
 
@@ -72,9 +73,10 @@ export class dm_SelectEndpointButton extends ToolbarButton {
  */
 export class dm_CopyButton extends ToolbarButton {
 
-	constructor(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList, label: string, tooltip: string){
+	constructor(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList, icon: LabIcon, tooltip: string){
 		super( {
-          label: label,
+          icon,
+		  //label : 'Copy',
 	      tooltip: tooltip,
 	      onClick: () => { this.handle_click(source, target, monitor); }
 	    });

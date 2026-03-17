@@ -25,7 +25,12 @@ import {
   Widget
 } from '@lumino/widgets';
 
-import { folderIcon } from '@jupyterlab/ui-components';
+import { 
+  folderIcon,
+  caretRightIcon,
+  caretLeftIcon
+  //arrowLeftIcon
+ } from '@jupyterlab/ui-components';
 
 import {
   dm_TransferList
@@ -78,14 +83,15 @@ export class dmWidget extends Widget {
       this.leftFB,
       this.rightFB,
       this._transferListWidget,
-      '→',
+      caretRightIcon,
       'Copy left selected to right directory directly'
     );
+
     const copyBtntoL = new dm_CopyButton(
       this.rightFB,
       this.leftFB,
       this._transferListWidget,
-      '<--',
+      caretLeftIcon,
       'Copy right selected to left directory directly'
     );
 

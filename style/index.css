@@ -63,14 +63,20 @@
   min-width: 40px;
   padding: 6px;
   /*padding: 8px 12px;*/
-  border-radius: 6px;
-  border: 1px solid var(--jp-border-color2);
-  background: var(--jp-layout-color1);
   cursor: pointer;
+
+  background: var(--jp-layout-color2);
+  border: 1px solid var(--jp-border-color2);
+  border-radius: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--jp-ui-font-color1);
 }
 
 .dm-action-panel button:hover {
-  background: var(--jp-layout-color2);
+  background: var(--jp-layout-color3);
 }
 
 /* === TRANSFER LIST === */
