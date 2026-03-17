@@ -6,6 +6,79 @@
 :root {
   --indent: 1em;
 }
+/* === ROOT === */
+.dm-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--jp-layout-color0);
+}
+
+/* === MAIN SPLIT AREA === */
+.dm-main {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* === PANELS === */
+.dm-panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--jp-border-color2);
+  border-radius: 6px;
+  background: var(--jp-layout-color1);
+  overflow: hidden;
+}
+
+/* === HEADERS === */
+.dm-header {
+  font-weight: 600;
+  padding: 6px 10px;
+  background: var(--jp-layout-color2);
+  border-bottom: 1px solid var(--jp-border-color2);
+  font-size: var(--jp-ui-font-size1);
+}
+
+/* === TOOLBAR === */
+.dm-toolbar {
+  border-bottom: 1px solid var(--jp-border-color2);
+  padding: 4px;
+}
+
+/* Copy buttons in the middle */
+.dm-action-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* vertical center */
+  align-items: center;
+  gap: 10px;
+  height: 100%;              
+}
+
+/* Make the copy button nicer */
+.dm-action-panel button {
+  font-size: 20px;
+  min-width: 40px;
+  padding: 6px;
+  /*padding: 8px 12px;*/
+  border-radius: 6px;
+  border: 1px solid var(--jp-border-color2);
+  background: var(--jp-layout-color1);
+  cursor: pointer;
+}
+
+.dm-action-panel button:hover {
+  background: var(--jp-layout-color2);
+}
+
+/* === TRANSFER LIST === */
+.dm-transfer-wrapper {
+  border-top: 1px solid var(--jp-border-color2);
+  padding: 6px;
+  background: var(--jp-layout-color1);
+}
 
 @import url('~tree-finder/dist/tree-finder.css');
 @import url('~tree-finder/dist/theme/material.css');

@@ -18,9 +18,10 @@ import { ILauncher } from '@jupyterlab/launcher';
 
 import {
   BoxPanel,
-  BoxLayout,
-  DockPanel,
+  //BoxLayout,
+  //DockPanel,
   SplitPanel,
+  PanelLayout,
   Widget
 } from '@lumino/widgets';
 
@@ -46,117 +47,141 @@ export class dmWidget extends Widget {
 
   constructor(app: JupyterFrontEnd, settings: ISettingRegistry.ISettings) {
     super();
-    this.addClass('my-dmWidget');
+    this.addClass('dm-root');
 
-	// ============= Dual file tree view ======================================
-	
-    // left ("_l") and right ("_r") file tree panel each 
-    // including browser and info panels
-    
-    // ============= Left file tree ======================================
-    this._fbWidget_l = new dm_FileTreePanel(app, settings);
-    
-    // TODO buttons / actions
-    const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this._fbWidget_l);
-    this._fbWidget_l.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_l);
 
-    this._fbPanel_l = new SplitPanel({
-      orientation: 'vertical',
-      spacing: 1
-    });
-    this._fbPanel_l.id = 'fb_panel_l';
-    this._fbPanel_l.addWidget(this._fbWidget_l);
-    this._fbPanel_l.setRelativeSizes([90, 10]);
 
-    // ============= Right file tree =====================================
-    this._fbWidget_r = new dm_FileTreePanel(app, settings);
-    
-    // TODO buttons / actions
-    const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this._fbWidget_r);
-    this._fbWidget_r.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_r);
-
+    // === Create components ===
+    this.source = new dm_FileTreePanel(app, settings);
+    this.target = new dm_FileTreePanel(app, settings);
     this._transferListWidget = new dm_TransferList();
 
-    this._fbPanel_r = new SplitPanel({
-      orientation: 'vertical',
-      spacing: 1
-    });
-    this._fbPanel_r.id = 'fb_panel_r';
-    this._fbPanel_r.addWidget(this._fbWidget_r);
-    this._fbPanel_r.setRelativeSizes([90, 10]);
+	  // === Headers ===
+    const sourceHeader = this._createHeader('Source');
+    const targetHeader = this._createHeader('Target');
+
+
+    // ============= Left file tree ======================================
+    const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this.source);
+    this.source.toolbar.addClass('dm-toolbar');
+    this.source.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_l);
+
+    // ============= Right file tree =====================================
+    const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this.target);
+    this.target.toolbar.addClass('dm-toolbar');
+    this.target.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_r);
 
     // ============= Middle panel with copy buttons =====================================
+const actionPanel = new Widget();
+    actionPanel.addClass('dm-action-panel');
 
-    this._transferBoxPanel = new BoxPanel({
-      direction: 'top-to-bottom'
-    });
-    this._transferBoxPanel.id = "transferToolbar";
-    this._transferBoxPanel.node.style.maxWidth="100px";
-    this._transferBoxPanel.node.style.maxHeight="100px";
-    this._transferBoxPanel.node.style.top="200px";
+    //setting up the buttons
+    const copyBtntoR = new dm_CopyButton(
+      this.source,
+      this.target,
+      this._transferListWidget,
+      '→',
+      'Copy left selected to right directory directly'
+    );
+    const copyBtntoL = new dm_CopyButton(
+      this.target,
+      this.source,
+      this._transferListWidget,
+      '<--',
+      'Copy right selected to left directory directly'
+    );
 
-    const copyToRight = new dm_CopyButton(this._fbWidget_l, this._fbWidget_r, this._transferListWidget,
-         '-->', 'Copy left selected to right directory directly');
-	   const copyToLeft =  new dm_CopyButton(this._fbWidget_r, this._fbWidget_l, this._transferListWidget,
-         '<--', 'Copy right selected to left directory directly');
-    this._transferBoxPanel.addWidget(copyToRight);
-    this._transferBoxPanel.addWidget(copyToLeft);
+    // setting buttons inside layout to be displayed by lumino
+    const actionLayout = new PanelLayout();
+    actionLayout.addWidget(copyBtntoR);
+    actionLayout.addWidget(copyBtntoL);
+    actionPanel.layout = actionLayout;
 
     // ============= Middle main panel: FB-left / transfer buttons / FB-right ==============
-    
-    this._fbPanel = new BoxPanel({
-        direction: 'left-to-right',
-        spacing: 1
-    });
-    this._fbPanel.id = 'fb_panel';
-    this._fbPanel.addClass('dm_Widget-main');
-    this._fbPanel.addWidget(this._fbPanel_l);
-    this._fbPanel.addWidget(this._transferBoxPanel);
-    this._fbPanel.addWidget(this._fbPanel_r);
+    const sourcePanel = this._wrapPanel(sourceHeader, this.source);
+    const targetPanel = this._wrapPanel(targetHeader, this.target);
 
+
+     // === Split layout ===
+    const split = new SplitPanel({ orientation: 'horizontal' });
+    split.addClass('dm-main');
+
+    split.addWidget(sourcePanel);
+    split.addWidget(actionPanel);
+    split.addWidget(targetPanel);
+
+    SplitPanel.setStretch(sourcePanel, 1);
+    SplitPanel.setStretch(targetPanel, 1);
+    SplitPanel.setStretch(actionPanel, 0);
+    actionPanel.node.style.minWidth = '60px';
 
     // ======== Table with info about tasks / transfers ===========
+    const transferWrapper = new Widget();
+    transferWrapper.addClass('dm-transfer-wrapper');
 
-    let _wrapper1 = new SplitPanel({
-      orientation: 'horizontal',
-      spacing: 1,
-
-    });
-    _wrapper1.title.label = "Transfers";
-    _wrapper1.addWidget(this._transferListWidget);
     const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "Refresh list of transfers");
-    _wrapper1.addWidget(refresh_transferlist_button);
-    _wrapper1.setRelativeSizes([80,20]);
-    let _wrapper = new DockPanel();
-    _wrapper.addWidget(_wrapper1);
 
+    const wrapperLayout = new PanelLayout();
+    wrapperLayout.addWidget(this._transferListWidget);
+    wrapperLayout.addWidget(refresh_transferlist_button);
+    transferWrapper.node.appendChild(this._transferListWidget.node);
 
-    // ======== Main panel =====================
-    this._mainLayout = (this.layout = new BoxLayout());
-    
-    this._panel_collection = new SplitPanel({
-          orientation: 'vertical',
-          spacing: 10,
-          alignment: "center"
+    transferWrapper.layout = wrapperLayout;
+
+    // ======== Main layout =====================
+
+    const _mainLayout = new BoxPanel({
+      direction: 'top-to-bottom',
+      spacing: 0
     });
-    this._panel_collection.id = 'panel_collection';
-    this._panel_collection.addWidget(this._fbPanel);
-    this._panel_collection.addWidget(_wrapper);
-    this._panel_collection.setRelativeSizes([80, 10]);
-    
-    this._mainLayout.addWidget(this._panel_collection);	
+    _mainLayout.addClass('dm-root');
+
+    _mainLayout.addWidget(split);
+    _mainLayout.addWidget(transferWrapper);
+
+    // Control proportions
+    BoxPanel.setStretch(split, 3);
+    BoxPanel.setStretch(transferWrapper, 1);
+
+    this.layout = new PanelLayout();
+    (this.layout as PanelLayout).addWidget(_mainLayout);
+    //this._mainLayout.addWidget(split);
+    //this._mainLayout.addWidget(transferWrapper);
 
   }//end constructor
 
-  private _fbWidget_l: dm_FileTreePanel;
-  private _fbPanel_l: SplitPanel;
-  private _fbWidget_r: dm_FileTreePanel;
-  private _fbPanel_r: SplitPanel;
-  private _transferBoxPanel: BoxPanel;
-  private _fbPanel: BoxPanel;
+    private _createHeader(title: string): Widget {
+    const header = new Widget();
+    header.addClass('dm-header');
+    header.node.textContent = title;
+    return header;
+  }
+
+    private _wrapPanel(header: Widget, content: Widget): Widget {
+    const panel = new Widget();
+    panel.addClass('dm-panel');
+
+    const layout = new PanelLayout();
+    panel.layout = layout;
+
+    layout.addWidget(header);
+    //layout.addWidget(toolbar);
+    layout.addWidget(content);
+
+    return panel;
+  }
+
+  //private _fbWidget_l: dm_FileTreePanel;
+  //private _fbPanel_l: SplitPanel;
+  private source: dm_FileTreePanel;
+  private target: dm_FileTreePanel;
+  //private _fbWidget_r: dm_FileTreePanel;
+  //private _fbPanel_r: SplitPanel;
+  //private _transferBoxPanel: BoxPanel;
+  //private _fbPanel: BoxPanel;
   private _transferListWidget: dm_TransferList;
-  private _mainLayout: BoxLayout;
-  private _panel_collection: SplitPanel;
+  //private _mainLayout: PanelLayout;
+  //private _panel_collection: SplitPanel;
 
 }// end class dmWidget
 
