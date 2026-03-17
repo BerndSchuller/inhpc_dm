@@ -29,7 +29,7 @@ import {
   folderIcon,
   caretRightIcon,
   caretLeftIcon
-  //arrowLeftIcon
+  //chevronRightIcon,
  } from '@jupyterlab/ui-components';
 
 import {
@@ -46,7 +46,6 @@ import {
   dm_FileTreePanel,
 } from './dm_filetree';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-
 
 export class dmWidget extends Widget {
 
