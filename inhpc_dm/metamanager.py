@@ -174,15 +174,11 @@ class MetaManager(MetaManagerShared, AsyncContentsManager):
     dir_exists = path_first_arg("dir_exists", False, sync=False)
     file_exists = path_kwarg("file_exists", "", False, sync=False)
     exists = path_first_arg("exists", False, sync=False)
-
     save = path_second_arg("save", "model", True, sync=False)
     rename = path_old_new("rename", False, sync=False)
-
     get = path_first_arg("get", True, sync=False)
     delete = path_first_arg("delete", False, sync=False)
-
     get_kernel_path = path_first_arg("get_kernel_path", False, sync=True)
-
     create_checkpoint = path_first_arg("create_checkpoint", False, sync=False)
     list_checkpoints = path_first_arg("list_checkpoints", False, sync=False)
     restore_checkpoint = path_second_arg("restore_checkpoint", "checkpoint_id", False, sync=False)

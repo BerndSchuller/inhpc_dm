@@ -15,16 +15,16 @@ import {
   cutIcon,
   downloadIcon,
   editIcon,
+  fileIcon,
   filterListIcon,
+  newFolderIcon,
   pasteIcon,
   refreshIcon,
-  fileIcon,
-  newFolderIcon,
+  shareIcon
 } from "@jupyterlab/ui-components";
 import { DisposableSet, IDisposable } from "@lumino/disposable";
 import { Menu } from "@lumino/widgets";
 import { Content, Path } from "tree-finder";
-
 
 import { JupyterClipboard } from "./clipboard";
 import { TreeFinderSidebar } from "./treefinder";
@@ -52,6 +52,7 @@ export const commandNames = [
   "restore",
   "toggleColumnPath",
   "toggleColumn",
+  "share"
 ] as const;
 
 
@@ -319,6 +320,33 @@ export function createStaticCommands(
         }
       },
     }),
+    app.commands.addCommand(commandIDs.share, {
+      execute: async args => {
+        const treefinder = tracker.currentWidget;
+        const model = treefinder.model!;
+        const message =
+        model.selection.length === 1
+          ? `Are you sure you want to share: ${model.selection[0].name}?`
+          : `Are you sure you want to share the ${model.selection.length} selected items?`;
+        const result = await showDialog({
+          title: "Share",
+          body: message,
+          buttons: [
+            Dialog.cancelButton({ label: "Cancel" }),
+            Dialog.okButton({ label: "Share" }),
+          ],
+          // By default focus on "Cancel"
+          defaultButton: 0,
+        });
+
+        if (!treefinder.isDisposed && result.button.accept) {
+          await Promise.allSettled(model.selection.map(s => TreeFinderSidebar.share(treefinder, s.pathstr, s.hasChildren)));
+        }
+      },
+      icon: shareIcon,
+      label: "Share",
+      isEnabled: () => tracker.currentWidget?.sharingSupport,
+    }),
   ].reduce((set: DisposableSet, d) => {
     set.add(d); return set;
   }, new DisposableSet());
@@ -390,6 +418,11 @@ export async function createDynamicCommands(
     }),
     app.contextMenu.addItem({
       command: commandIDs.rename,
+      selector,
+      rank: contextMenuRank++,
+    }),
+    app.contextMenu.addItem({
+      command: commandIDs.share,
       selector,
       rank: contextMenuRank++,
     }),

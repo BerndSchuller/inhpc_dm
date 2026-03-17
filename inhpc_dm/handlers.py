@@ -15,7 +15,10 @@ import tornado
 import inhpc_dm.uftp_handler as uftp_handler
 import inhpc_dm.tasks as tasks
 
+from pyunicore.client import Resource
+from pyunicore.uftp.uftp import AuthServer
 from pyunicore.uftp.uftpfs import UFTPFS
+
 
 class AbstractDMHandler(JupyterHandler):
     """ Abstract base class for dm-tool handlers """
@@ -132,29 +135,106 @@ class InfoHandler(AbstractDMHandler):
     @tornado.web.authenticated
     def get(self):
         """
-        Get info about a file / directory
+        Get info about remote filesystem
 
         input: URL query parameters
-         "file": file path
+         "drive": drive id
 
         """
-        requested_file = self.get_argument("file")
-        mount_info = self.read_mount_info()
-        id_1, target_mount = self.resolve_mount_point(requested_file, mount_info)
-        result_data = { "status": "OK" }
-        if id_1==None:
-            result_data["protocol"] = "local"
+        req_drive = self.get_argument("drive")
+        mm: MetaManager = self.serverapp.contents_manager
+        req_mgr: FSManager = mm._managers[req_drive]
+        req_fs: FS = req_mgr._pyfilesystem_instance
+        sharing_support = check_sharing_support(req_fs)
+        if type(req_fs) is UFTPFS:
+            protocol = "UFTP"
         else:
-            for key in ["protocol", "endpoint", "remote_directory"]:
-                result_data[key] = target_mount[key]
+            protocol = str(type(req_fs))
+        result_data = { "status": "OK",
+                       "drive": req_drive,
+                       "sharing_support": sharing_support,
+                       "protocol": protocol }
         self.finish(json.dumps(result_data))
 
+class ShareHandler(AbstractDMHandler):
+    """
+    Handler for file share operations
+    """
+
+    @tornado.web.authenticated
+    def get(self):
+        """
+        List shares
+
+        input: URL query parameters
+         "drive": drive id
+
+        """
+        req_drive = self.get_argument("drive")
+        mm: MetaManager = self.serverapp.contents_manager
+        req_mgr: FSManager = mm._managers[req_drive]
+        req_fs: FS = req_mgr._pyfilesystem_instance
+        sharing_support = check_sharing_support(req_fs)
+        if type(req_fs) is UFTPFS:
+            protocol = "UFTP"
+        else:
+            protocol = str(type(req_fs))
+        result_data = { "status": "OK",
+                       "drive": req_drive,
+                       "sharing_support": sharing_support,
+                       "protocol": protocol }
+        self.finish(json.dumps(result_data))
+
+    @tornado.web.authenticated
+    def post(self):
+        """
+        Create new share
+
+        input: JSON object
+           {
+             "path": file to share, including drive
+             "user": target DN - defaults to 'cn=anonymous,o=unknown,ou=unknown'
+             "access": READ, WRITE or NONE, defaults to "READ"
+           }
+        """
+        params = self.get_json_body()
+        _drive, _path = params["path"].split("/", 1)
+        req_data = {}
+        req_data["user"] = params.get("user", "cn=anonymous,o=unknown,ou=unknown")
+        req_data["access"] = params.get("access", "READ")
+        # TODO: other options
+        mm: MetaManager = self.serverapp.contents_manager
+        req_mgr: FSManager = mm._managers[_drive]
+        req_fs: FS = req_mgr._pyfilesystem_instance
+        if type(req_fs) is UFTPFS:
+            _path = req_fs.base_path + "/" + _path
+            req_data["path"] = _path
+            share_client = _get_uftp_authserver(req_fs).get_sharing_endpoint()
+            with share_client.transport.post(json=req_data, url = share_client.resource_url) as _response:
+                new_share = Resource(share_client.transport, _response.headers["Location"])
+                result_data = new_share.properties
+                pass
+        else:
+            raise ValueError("Share not supported")
+        self.finish(json.dumps(result_data))
+
+
+def check_sharing_support(fs):
+    if type(fs) is not UFTPFS:
+            return None
+    return _get_uftp_authserver(fs).is_sharing_supported()
+
+def _get_uftp_authserver(fs: UFTPFS):
+    if type(fs) is not UFTPFS:
+            return None
+    return AuthServer(fs.uftp_auth_credentials, fs.uftp_auth_url)
 
 def setup_handlers(web_app, url_path):
     host_pattern = ".*$"
     base_url = web_app.settings["base_url"]
     handlers = [(url_path_join(base_url, url_path, "tasks"), TaskHandler),
                 (url_path_join(base_url, url_path, "info"), InfoHandler),
+                (url_path_join(base_url, url_path, "share"), ShareHandler),
                 ]
     web_app.dm_task_holder = tasks.TaskHolder()
     web_app.add_handlers(host_pattern, handlers)

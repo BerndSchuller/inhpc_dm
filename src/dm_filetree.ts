@@ -26,6 +26,7 @@ import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { commandIDs } from "./commands";
 import { revealPath } from "./contents_utils";
 import { UploadButton } from "./upload";
+import { dm_ShowEndpointInfoButton, dm_ShowSharesButton  } from "./dm_buttons";
 
 //holds one TreeFinderWidget
 export class dm_FileTreePanel extends Widget {
@@ -56,8 +57,10 @@ export class dm_FileTreePanel extends Widget {
        tooltip: "Refresh",
        enabled: false
      }
-     
     );
+
+    const shares_button = new dm_ShowSharesButton(this);
+    shares_button.enabled = false;
 
     const new_folder_button = new ToolbarButton({
       icon: newFolderIcon,
@@ -72,11 +75,18 @@ export class dm_FileTreePanel extends Widget {
 
     const upload_button = new UploadButton({ uploader: null });
     upload_button.enabled = false;
+  
+    const info_button = new dm_ShowEndpointInfoButton(this);
+    info_button.enabled = false;
 
+    this.toolbar.addItem("info", info_button);
+    this.toolbar.addItem("shares", shares_button);
     this.toolbar.addItem("refresh", refresh_button);
     this.toolbar.addItem("new folder", new_folder_button);
     this.toolbar.addItem("upload", upload_button);
 
+    this._buttons.push(info_button);
+    this._buttons.push(shares_button);
     this._buttons.push(refresh_button);
     this._buttons.push(new_folder_button);
     this._buttons.push(upload_button);
@@ -108,7 +118,9 @@ export class dm_FileTreePanel extends Widget {
     let columns = Array<keyof ContentsProxy.IJupyterContentRow>();
     columns.push("path");
     columns.push("size");
-    this.treefinder = new TreeFinderWidget( {app:this.app, columns:columns, url:url, rootPath: drive, settings:this.settings });
+    const sharingSupport = url.toLowerCase().startsWith("uftp") // TODO
+    this.treefinder = new TreeFinderWidget( {app:this.app, columns:columns, url:url, rootPath: drive,
+      settings:this.settings, sharingSupport:sharingSupport });
     (this.layout as PanelLayout).addWidget(this.treefinder);
     TreeFinderSidebar.tracker.add(this.treefinder);
     this._buttons.forEach(b => {
@@ -140,12 +152,10 @@ export class dm_FileTreePanel extends Widget {
   getSelected(): dm_FileTreeSelection[]{
     var result: dm_FileTreeSelection[] = [];
     this.treefinder.model.selection.forEach((item)=>{
-      console.log("selected: "+JSON.stringify(item));
       var x = new dm_FileTreeSelection();
       x.drive = this.drive;
       x.path = item.pathstr;
       x.isDir = "dir"==item.row.kind;
-      console.log("--> "+JSON.stringify(x));
       result.push(x);
     });
     return result;
