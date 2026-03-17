@@ -49,60 +49,59 @@ export class dmWidget extends Widget {
     super();
     this.addClass('dm-root');
 
-
-
-    // === Create components ===
-    this.source = new dm_FileTreePanel(app, settings);
-    this.target = new dm_FileTreePanel(app, settings);
+    // === FileBrowsers left + right + tranferList in the middle ===
+    this.leftFB = new dm_FileTreePanel(app, settings);
+    this.rightFB = new dm_FileTreePanel(app, settings);
     this._transferListWidget = new dm_TransferList();
 
-	  // === Headers ===
-    const sourceHeader = this._createHeader('Source');
-    const targetHeader = this._createHeader('Target');
+	  // === Headlines ===
+    const sourceHeader = this._createHeader('Filesystem 1');
+    const targetHeader = this._createHeader('Filesystem 2');
 
 
     // ============= Left file tree ======================================
-    const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this.source);
-    this.source.toolbar.addClass('dm-toolbar');
-    this.source.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_l);
+    const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this.leftFB);
+    this.leftFB.toolbar.addClass('dm-toolbar');
+    this.leftFB.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_l);
 
     // ============= Right file tree =====================================
-    const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this.target);
-    this.target.toolbar.addClass('dm-toolbar');
-    this.target.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_r);
+    const tb_selectEndpointButton_r = new dm_SelectEndpointButton(this.rightFB);
+    this.rightFB.toolbar.addClass('dm-toolbar');
+    this.rightFB.toolbar.insertItem(0, "selectEndpointBtn", tb_selectEndpointButton_r);
 
     // ============= Middle panel with copy buttons =====================================
-const actionPanel = new Widget();
+    const actionPanel = new Widget();
     actionPanel.addClass('dm-action-panel');
 
     //setting up the buttons
     const copyBtntoR = new dm_CopyButton(
-      this.source,
-      this.target,
+      this.leftFB,
+      this.rightFB,
       this._transferListWidget,
       '→',
       'Copy left selected to right directory directly'
     );
     const copyBtntoL = new dm_CopyButton(
-      this.target,
-      this.source,
+      this.rightFB,
+      this.leftFB,
       this._transferListWidget,
       '<--',
       'Copy right selected to left directory directly'
     );
 
-    // setting buttons inside layout to be displayed by lumino
+    // setting buttons inside layout (for displaying via lumino)
     const actionLayout = new PanelLayout();
     actionLayout.addWidget(copyBtntoR);
     actionLayout.addWidget(copyBtntoL);
     actionPanel.layout = actionLayout;
 
     // ============= Middle main panel: FB-left / transfer buttons / FB-right ==============
-    const sourcePanel = this._wrapPanel(sourceHeader, this.source);
-    const targetPanel = this._wrapPanel(targetHeader, this.target);
+    //preparing left and right
+    const sourcePanel = this._wrapPanel(sourceHeader, this.leftFB);
+    const targetPanel = this._wrapPanel(targetHeader, this.rightFB);
 
 
-     // === Split layout ===
+     // === main Split layout ===
     const split = new SplitPanel({ orientation: 'horizontal' });
     split.addClass('dm-main');
 
@@ -116,18 +115,24 @@ const actionPanel = new Widget();
     actionPanel.node.style.minWidth = '60px';
 
     // ======== Table with info about tasks / transfers ===========
-    const transferWrapper = new Widget();
+    const transferWrapper = new SplitPanel({ orientation: 'horizontal' });//new Widget();
     transferWrapper.addClass('dm-transfer-wrapper');
 
     const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "Refresh list of transfers");
 
+    transferWrapper.addWidget(this._transferListWidget);
+    transferWrapper.addWidget(refresh_transferlist_button);
+    SplitPanel.setStretch(this._transferListWidget, 1);
+    SplitPanel.setStretch(refresh_transferlist_button, 0);
+    refresh_transferlist_button.node.style.minWidth = '60px';
+/*
     const wrapperLayout = new PanelLayout();
     wrapperLayout.addWidget(this._transferListWidget);
     wrapperLayout.addWidget(refresh_transferlist_button);
     transferWrapper.node.appendChild(this._transferListWidget.node);
 
     transferWrapper.layout = wrapperLayout;
-
+*/
     // ======== Main layout =====================
 
     const _mainLayout = new BoxPanel({
@@ -145,8 +150,6 @@ const actionPanel = new Widget();
 
     this.layout = new PanelLayout();
     (this.layout as PanelLayout).addWidget(_mainLayout);
-    //this._mainLayout.addWidget(split);
-    //this._mainLayout.addWidget(transferWrapper);
 
   }//end constructor
 
@@ -173,8 +176,8 @@ const actionPanel = new Widget();
 
   //private _fbWidget_l: dm_FileTreePanel;
   //private _fbPanel_l: SplitPanel;
-  private source: dm_FileTreePanel;
-  private target: dm_FileTreePanel;
+  private leftFB: dm_FileTreePanel;
+  private rightFB: dm_FileTreePanel;
   //private _fbWidget_r: dm_FileTreePanel;
   //private _fbPanel_r: SplitPanel;
   //private _transferBoxPanel: BoxPanel;
