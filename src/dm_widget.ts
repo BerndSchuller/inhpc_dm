@@ -25,7 +25,7 @@ import {
 
 import { 
   folderIcon,
-  LabIcon
+  //LabIcon
  } from '@jupyterlab/ui-components';
 
 import {
@@ -41,6 +41,11 @@ import {
 import {
   dm_FileTreePanel,
 } from './dm_filetree';
+
+import {
+  arrowRightIcon,
+  arrowLeftIcon
+}from './icons';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 export class dmWidget extends Widget {
@@ -79,7 +84,6 @@ export class dmWidget extends Widget {
       this.rightFB,
       this._transferListWidget,
       arrowRightIcon,
-      //caretRightIcon,
       'Copy left selected to right directory directly'
     );
 
@@ -88,7 +92,6 @@ export class dmWidget extends Widget {
       this.leftFB,
       this._transferListWidget,
       arrowLeftIcon,
-      //caretLeftIcon,
       'Copy right selected to left directory directly'
     );
 
@@ -166,7 +169,6 @@ export class dmWidget extends Widget {
     panel.layout = layout;
 
     layout.addWidget(header);
-    //layout.addWidget(toolbar);
     layout.addWidget(content);
 
     return panel;
@@ -177,34 +179,6 @@ export class dmWidget extends Widget {
   private _transferListWidget: dm_TransferList;
 
 }// end class dmWidget
-
-export const arrowRightIcon = new LabIcon({
-  name: 'dm:arrow-right',
-  svgstr: `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M4 12 H16 M12 8 L16 12 L12 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"/>
-    </svg>
-  `
-});
-
-export const arrowLeftIcon = new LabIcon({
-  name: 'dm:arrow-left',
-  svgstr: `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M20 12 H8 M12 8 L8 12 L12 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"/>
-    </svg>
-  `
-});
 
 /**
 * Activate the Data Management widget extension

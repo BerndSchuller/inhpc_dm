@@ -22,11 +22,30 @@ export const jupyterFsIcon = new LabIcon({ name: "jfs:jupyter-fs", svgstr: jupyt
 export const visibilityIcon = new LabIcon({ name: "jfs:visibility", svgstr: visibilitySvgstr });
 export const visibilityOffIcon = new LabIcon({ name: "jfs:visibility-off", svgstr: visibilityOffSvgstr });
 
-/*export const arrowLeftIcon = new LabIcon({
-  name: 'dm:arrow-left',
+export const arrowRightIcon = new LabIcon({
+  name: 'dm:arrow-right',
   svgstr: `
-    <svg viewBox="0 0 24 24">
-      <path d="M16 5l-8 7 8 7" fill="none" stroke="currentColor" stroke-width="2"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M4 12 H16 M12 8 L16 12 L12 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
     </svg>
   `
-});*/
+});
+
+export const arrowLeftIcon = new LabIcon({
+  name: 'dm:arrow-left',
+  svgstr: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M20 12 H8 M12 8 L8 12 L12 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+    </svg>
+  `
+});
