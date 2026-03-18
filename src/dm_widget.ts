@@ -18,8 +18,6 @@ import { ILauncher } from '@jupyterlab/launcher';
 
 import {
   BoxPanel,
-  //BoxLayout,
-  //DockPanel,
   SplitPanel,
   PanelLayout,
   Widget
@@ -27,8 +25,6 @@ import {
 
 import { 
   folderIcon,
-  //caretRightIcon,
-  //caretLeftIcon,
   LabIcon
  } from '@jupyterlab/ui-components';
 
@@ -39,7 +35,7 @@ import {
 import { 
   dm_CopyButton,
   dm_RefreshButton,
-  dm_SelectEndpointButton,
+  dm_SelectEndpointButton
 } from './dm_buttons';
 
 import {
@@ -134,6 +130,7 @@ export class dmWidget extends Widget {
     SplitPanel.setStretch(refresh_transferlist_button, 0);
     refresh_transferlist_button.node.style.minWidth = '30px';
 
+
     // ======== Main layout =====================
 
     const _mainLayout = new BoxPanel({
@@ -175,17 +172,9 @@ export class dmWidget extends Widget {
     return panel;
   }
 
-  //private _fbWidget_l: dm_FileTreePanel;
-  //private _fbPanel_l: SplitPanel;
   private leftFB: dm_FileTreePanel;
   private rightFB: dm_FileTreePanel;
-  //private _fbWidget_r: dm_FileTreePanel;
-  //private _fbPanel_r: SplitPanel;
-  //private _transferBoxPanel: BoxPanel;
-  //private _fbPanel: BoxPanel;
   private _transferListWidget: dm_TransferList;
-  //private _mainLayout: PanelLayout;
-  //private _panel_collection: SplitPanel;
 
 }// end class dmWidget
 
@@ -275,6 +264,7 @@ export function activate_dm(
     });
   }
 
+  // TODO how does the restore logic work?
   // restorer.restore(tracker_dm, {
   //    command: command_dm,
   //    name: () => 'inhpc_dm'

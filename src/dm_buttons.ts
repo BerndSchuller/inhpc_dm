@@ -11,8 +11,10 @@ import {
 
 import { 
     addIcon,
+	infoIcon,
 	LabIcon,
-	refreshIcon
+	refreshIcon,
+	shareIcon
   } from '@jupyterlab/ui-components';
 
 import { requestAPI } from './dm_handler';
@@ -162,3 +164,52 @@ export class dm_RefreshButton extends ToolbarButton {
 	    transferlist.refreshData();
 	}
 } // end dm_RefreshButton
+
+/**
+ * Button for showing info on remote FS
+ */
+export class dm_ShowEndpointInfoButton extends ToolbarButton {
+	constructor(fb: dm_FileTreePanel){
+		super( {
+		  icon: infoIcon,
+	      tooltip: "Show info about this back-end",
+		  onClick: () => {this.handle_click(fb);}
+	    });
+	}
+	async handle_click(fb: dm_FileTreePanel){
+	    try {
+      		const data = await requestAPI<any>('inhpc_dm/info'
+				+"?drive="+fb.drive, { 'method': 'GET' });
+			 console.log('info reply: ' + JSON.stringify(data));
+		} catch (reason) {
+      	    console.error(`Error on GET /inhpc_dm/info: ${reason}`);
+      	    showErrorMessage("Error", `${reason}`);
+    	}	
+	}
+}
+
+
+/**
+ * Button for showing shared files on remote FS
+ */
+export class dm_ShowSharesButton extends ToolbarButton {
+	constructor(fb: dm_FileTreePanel){
+		super( {
+		  icon: shareIcon,
+	      tooltip: "Show shares for this back-end",
+		  onClick: () => {this.handle_click(fb);}
+	    });
+	}
+
+	// TODO
+	async handle_click(fb: dm_FileTreePanel){
+	    try {
+      		const data = await requestAPI<any>('inhpc_dm/info'
+				+"?drive="+fb.drive, { 'method': 'GET' });
+			 console.log('info reply: ' + JSON.stringify(data));
+		} catch (reason) {
+      	    console.error(`Error on GET /inhpc_dm/info: ${reason}`);
+      	    showErrorMessage("Error", `${reason}`);
+    	}	
+	}
+}

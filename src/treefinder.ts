@@ -23,7 +23,6 @@ import {
   TranslationBundle,
 } from "@jupyterlab/translation";
 
-// import JSZip from "jszip";
 import { ArrayExt } from "@lumino/algorithm";
 import { CommandRegistry } from "@lumino/commands";
 import { PromiseDelegate } from "@lumino/coreutils";
@@ -40,6 +39,7 @@ import { Uploader } from "./upload";
 import { MimeData } from "@lumino/coreutils";
 import { Drag } from "@lumino/dragdrop";
 
+import { requestAPI } from './dm_handler';
 
 export class TreeFinderTracker extends WidgetTracker<TreeFinderWidget> {
 
@@ -96,7 +96,8 @@ export class TreeFinderWidget extends DragDropWidget {
     rootPath = "",
     translator,
     settings,
-    preferredDir
+    preferredDir,
+    sharingSupport = false
   }: TreeFinderWidget.IOptions) {
     const { commands, serviceManager: { contents } } = app;
 
@@ -119,6 +120,7 @@ export class TreeFinderWidget extends DragDropWidget {
     this.rootPath = rootPath === "" ? rootPath : rootPath + ":";
     this.preferredDir = preferredDir;
     this._initialLoad = true;
+    this.sharingSupport = sharingSupport;
 
     this._readyDelegate = new PromiseDelegate<void>();
     void this._readyDelegate.promise.catch(reason => showErrorMessage("Failed to init browser", reason as string));
@@ -582,6 +584,7 @@ export class TreeFinderWidget extends DragDropWidget {
   url: string;
   rootPath: string;
   preferredDir: string;
+  sharingSupport: boolean;
   private _columns: Array<keyof ContentsProxy.IJupyterContentRow>;
   settings: ISettingRegistry.ISettings | undefined;
   uploader: Uploader | undefined;
@@ -603,10 +606,10 @@ export namespace TreeFinderWidget {
     columns: Array<keyof ContentsProxy.IJupyterContentRow>;
     url: string;
     rootPath: string;
-
     translator?: ITranslator;
     settings?: ISettingRegistry.ISettings;
     preferredDir?: string;
+    sharingSupport?: boolean;
   }
 }
 
@@ -713,6 +716,7 @@ export namespace TreeFinderSidebar {
 
   export async function download(treefinder: TreeFinderWidget, path: string, folder: boolean): Promise<void> {
       if (folder) {
+        // TODO activate or remove?
         // const zip = new JSZip();
         // await this.wrapFolder(zip, path); // folder packing
         // // generate and save zip, reset path
@@ -729,19 +733,20 @@ export namespace TreeFinderSidebar {
       }
   }
 
-  // async wrapFolder(zip: JSZip, path: string) {
-  //   const base = this.cm.get(this.basepath + path);
-  //   const next = base.then(async res => {
-  //     if (res.type === "directory") {
-  //       const new_folder = zip.folder(res.name);
-  //       for (const c in res.content) {
-  //         await this.wrapFolder(new_folder, res.content[c].path);
-  //       }
-  //     } else {
-  //       zip.file(res.name, res.content);
-  //     }
-  //   });
-  //   await next;
-  // }
+ export async function share(treefinder: TreeFinderWidget, path: string, folder: boolean): Promise<void> {
+     try {
+      var req_data = JSON.stringify({
+        "path": path,
+         // TODO other params
+      })
+        console.log('Share call params: ' + req_data);
+        const data = await requestAPI<any>('inhpc_dm/share'+"?drive="+treefinder.rootPath,
+          { 'body': req_data, 'method': 'POST' });
+        console.log('share reply: ' + JSON.stringify(data));
+      } catch (reason) {
+            console.error(`Error on POST /inhpc_dm/share: ${reason}`);
+            showErrorMessage("Error", `${reason}`);
+      }
+  }
 
 }

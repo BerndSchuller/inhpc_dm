@@ -13,6 +13,7 @@ inhpc_dm/labextension/
 
 .project
 .pydevproject
+.vscode
 
 __pycache__
 
