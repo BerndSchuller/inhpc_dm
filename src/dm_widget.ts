@@ -27,9 +27,9 @@ import {
 
 import { 
   folderIcon,
-  caretRightIcon,
-  caretLeftIcon
-  //chevronRightIcon,
+  //caretRightIcon,
+  //caretLeftIcon,
+  LabIcon
  } from '@jupyterlab/ui-components';
 
 import {
@@ -82,7 +82,8 @@ export class dmWidget extends Widget {
       this.leftFB,
       this.rightFB,
       this._transferListWidget,
-      caretRightIcon,
+      arrowRightIcon,
+      //caretRightIcon,
       'Copy left selected to right directory directly'
     );
 
@@ -90,7 +91,8 @@ export class dmWidget extends Widget {
       this.rightFB,
       this.leftFB,
       this._transferListWidget,
-      caretLeftIcon,
+      arrowLeftIcon,
+      //caretLeftIcon,
       'Copy right selected to left directory directly'
     );
 
@@ -116,7 +118,8 @@ export class dmWidget extends Widget {
 
     SplitPanel.setStretch(sourcePanel, 1);
     SplitPanel.setStretch(targetPanel, 1);
-    SplitPanel.setStretch(actionPanel, 0);
+    SplitPanel.setStretch(actionPanel, 0.2);
+    actionPanel.node.style.flexShrink = '0'; //not get shrinked away
     actionPanel.node.style.minWidth = '60px';
 
     // ======== Table with info about tasks / transfers ===========
@@ -129,15 +132,8 @@ export class dmWidget extends Widget {
     transferWrapper.addWidget(refresh_transferlist_button);
     SplitPanel.setStretch(this._transferListWidget, 1);
     SplitPanel.setStretch(refresh_transferlist_button, 0);
-    refresh_transferlist_button.node.style.minWidth = '60px';
-/*
-    const wrapperLayout = new PanelLayout();
-    wrapperLayout.addWidget(this._transferListWidget);
-    wrapperLayout.addWidget(refresh_transferlist_button);
-    transferWrapper.node.appendChild(this._transferListWidget.node);
+    refresh_transferlist_button.node.style.minWidth = '30px';
 
-    transferWrapper.layout = wrapperLayout;
-*/
     // ======== Main layout =====================
 
     const _mainLayout = new BoxPanel({
@@ -192,6 +188,34 @@ export class dmWidget extends Widget {
   //private _panel_collection: SplitPanel;
 
 }// end class dmWidget
+
+export const arrowRightIcon = new LabIcon({
+  name: 'dm:arrow-right',
+  svgstr: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M4 12 H16 M12 8 L16 12 L12 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+    </svg>
+  `
+});
+
+export const arrowLeftIcon = new LabIcon({
+  name: 'dm:arrow-left',
+  svgstr: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M20 12 H8 M12 8 L8 12 L12 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+    </svg>
+  `
+});
 
 /**
 * Activate the Data Management widget extension

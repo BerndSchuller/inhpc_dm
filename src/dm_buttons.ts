@@ -2,9 +2,13 @@ import {
     Dialog,
     ToolbarButton,
     showDialog,
-    showErrorMessage,
+    showErrorMessage
   } from '@jupyterlab/apputils';
   
+import {
+	Widget
+} from '@lumino/widgets';
+
 import { 
     addIcon,
 	LabIcon,
@@ -71,16 +75,37 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 /**
  * Button for launching copy task
  */
-export class dm_CopyButton extends ToolbarButton {
+export class dm_CopyButton extends Widget{//ToolbarButton {
 
 	constructor(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList, icon: LabIcon, tooltip: string){
-		super( {
+		/*super( {
           icon,
 		  //label : 'Copy',
 	      tooltip: tooltip,
 	      onClick: () => { this.handle_click(source, target, monitor); }
 	    });
-	}
+	}*/
+	
+    super();
+
+    this.addClass('dm-copy-button');
+
+    const btn = document.createElement('button');
+    btn.title = tooltip;
+
+    const iconNode = icon.element({
+  		tag: 'span',
+  		className: 'jp-Icon'
+	});
+
+    btn.appendChild(iconNode);
+
+    btn.onclick = () => {
+      this.handle_click(source, target, monitor);
+    };
+
+    this.node.appendChild(btn);
+  }
 	
 	async handle_click(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList){
 	    var _action = "copy";

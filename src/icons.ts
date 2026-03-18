@@ -21,3 +21,12 @@ export const fileTreeIcon = new LabIcon({ name: "jfs:file-tree", svgstr: fileTre
 export const jupyterFsIcon = new LabIcon({ name: "jfs:jupyter-fs", svgstr: jupyterFsSvgstr });
 export const visibilityIcon = new LabIcon({ name: "jfs:visibility", svgstr: visibilitySvgstr });
 export const visibilityOffIcon = new LabIcon({ name: "jfs:visibility-off", svgstr: visibilityOffSvgstr });
+
+/*export const arrowLeftIcon = new LabIcon({
+  name: 'dm:arrow-left',
+  svgstr: `
+    <svg viewBox="0 0 24 24">
+      <path d="M16 5l-8 7 8 7" fill="none" stroke="currentColor" stroke-width="2"/>
+    </svg>
+  `
+});*/
