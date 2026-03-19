@@ -100,10 +100,23 @@
 }
 
 /* === TRANSFER LIST === */
-.dm-transfer-wrapper {
-  border-top: 1px solid var(--jp-border-color2);
-  padding: 6px;
-  background: var(--jp-layout-color1);
+.dm-transfer-header {
+  min-height: 28px;   
+  padding: 0 8px;
+  border-bottom: 1px solid var(--jp-border-color2);
+  background: var(--jp-layout-color2);
+  display: flex;
+  align-items: center;
+}
+
+.dm-transfer-title {
+  font-size: 13px;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.dm-transfer-header-button {
+  background-color: var(--jp-layout-color2);
 }
 
 @import url('~tree-finder/dist/tree-finder.css');

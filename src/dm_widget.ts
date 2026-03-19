@@ -25,7 +25,7 @@ import {
 
 import { 
   folderIcon,
-  //LabIcon
+  Toolbar
  } from '@jupyterlab/ui-components';
 
 import {
@@ -122,17 +122,37 @@ export class dmWidget extends Widget {
     actionPanel.node.style.minWidth = '60px';
 
     // ======== Table with info about tasks / transfers ===========
-    const transferWrapper = new SplitPanel({ orientation: 'horizontal' });//new Widget();
+
+    const transferWrapper = new SplitPanel({
+      orientation: 'vertical'
+    }); 
     transferWrapper.addClass('dm-transfer-wrapper');
 
+  // refresh button
     const refresh_transferlist_button = new dm_RefreshButton(this._transferListWidget, "Refresh list of transfers");
+    refresh_transferlist_button.addClass('dm-transfer-header-button');
+    //refresh_transferlist_button.addClass('jp-ToolbarButton');
+    refresh_transferlist_button.node.style.minWidth = '26px';
+    
+    // header with toolbar for good spacing and no clipping
+    const headerPanel = new Toolbar();
+    headerPanel.addClass('dm-transfer-header');
 
+    const headerTitle = new Widget();
+    headerTitle.node.textContent = 'Transfer-Log';
+    headerTitle.addClass('dm-transfer-title');
+
+    // assembling the header
+    headerPanel.addItem('Title',headerTitle);
+    headerPanel.addItem('spacing',Toolbar.createSpacerItem());
+    headerPanel.addItem('refreshBtn',refresh_transferlist_button);
+
+    // putting it all together
+    transferWrapper.addWidget(headerPanel);
     transferWrapper.addWidget(this._transferListWidget);
-    transferWrapper.addWidget(refresh_transferlist_button);
-    SplitPanel.setStretch(this._transferListWidget, 1);
-    SplitPanel.setStretch(refresh_transferlist_button, 0);
-    refresh_transferlist_button.node.style.minWidth = '30px';
-
+    //getting the ration between header and table right
+    SplitPanel.setStretch(headerPanel, 0.2);
+    SplitPanel.setStretch(this._transferListWidget, 10);
 
     // ======== Main layout =====================
 
