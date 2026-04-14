@@ -6,6 +6,7 @@ import {
   } from '@jupyterlab/apputils';
   
 import {
+	BoxPanel,
 	Widget
 } from '@lumino/widgets';
 
@@ -21,7 +22,7 @@ import { requestAPI } from './dm_handler';
 
 import { selectEndpoint } from './dm_dialogs';
 
-import { dm_TransferList } from './dm_transferlist';
+import { dm_SharesTable, dm_TransfersTable } from './dm_tables';
 
 import { dm_FileTreePanel } from './dm_filetree';
 
@@ -79,7 +80,7 @@ export class dm_SelectEndpointButton extends ToolbarButton {
  */
 export class dm_CopyButton extends Widget{//ToolbarButton {
 
-	constructor(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList, icon: LabIcon, tooltip: string){
+	constructor(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransfersTable, icon: LabIcon, tooltip: string){
 		/*super( {
           icon,
 		  //label : 'Copy',
@@ -109,7 +110,7 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
     this.node.appendChild(btn);
   }
 	
-	async handle_click(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransferList){
+	async handle_click(source: dm_FileTreePanel, target: dm_FileTreePanel, monitor: dm_TransfersTable){
 	    var _action = "copy";
 	    var _target_dir = target.getSelectedDir();
 	    var _sources: string[] = []
@@ -152,7 +153,7 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
  */
 export class dm_RefreshButton extends ToolbarButton {
 
-	constructor(transferlist: dm_TransferList, tooltip:string){
+	constructor(transferlist: dm_TransfersTable, tooltip:string){
 		super( {
 		  icon: refreshIcon,
 	      tooltip: tooltip,
@@ -160,7 +161,7 @@ export class dm_RefreshButton extends ToolbarButton {
 	    });
 	}
 	
-	async handle_click(transferlist: dm_TransferList){
+	async handle_click(transferlist: dm_TransfersTable){
 	    transferlist.refreshData();
 	}
 } // end dm_RefreshButton
@@ -181,6 +182,10 @@ export class dm_ShowEndpointInfoButton extends ToolbarButton {
       		const data = await requestAPI<any>('inhpc_dm/info'
 				+"?drive="+fb.drive, { 'method': 'GET' });
 			 console.log('info reply: ' + JSON.stringify(data));
+			 showDialog({
+				title: "Drive information",
+				body: "Status: "+data.status+" protocol: "+data.protocol,
+				buttons: [Dialog.okButton()]})
 		} catch (reason) {
       	    console.error(`Error on GET /inhpc_dm/info: ${reason}`);
       	    showErrorMessage("Error", `${reason}`);
@@ -201,14 +206,28 @@ export class dm_ShowSharesButton extends ToolbarButton {
 	    });
 	}
 
-	// TODO
 	async handle_click(fb: dm_FileTreePanel){
 	    try {
-      		const data = await requestAPI<any>('inhpc_dm/info'
+      		const data = await requestAPI<any>('inhpc_dm/share'
 				+"?drive="+fb.drive, { 'method': 'GET' });
-			 console.log('info reply: ' + JSON.stringify(data));
+			console.log('get shares reply: ' + JSON.stringify(data));
+			if(data.status!="OK"){
+				showErrorMessage("Error", `${data.statusMessage}`);
+			}
+			else{
+			const _widget = new BoxPanel();
+			const t = new dm_SharesTable(data.shares);
+			_widget.addWidget(t);
+			// TODO get a decent layout
+			_widget.node.style.width = "800px";
+			_widget.node.style.height = "600px";
+			showDialog({
+    			body: _widget,
+    			buttons: [ Dialog.okButton() ],
+  			});
+			}
 		} catch (reason) {
-      	    console.error(`Error on GET /inhpc_dm/info: ${reason}`);
+      	    console.error(`Error on GET /inhpc_dm/share: ${reason}`);
       	    showErrorMessage("Error", `${reason}`);
     	}	
 	}

@@ -175,14 +175,23 @@ class ShareHandler(AbstractDMHandler):
         req_mgr: FSManager = mm._managers[req_drive]
         req_fs: FS = req_mgr._pyfilesystem_instance
         sharing_support = check_sharing_support(req_fs)
+        result_data = {}
+        result_data["status"] = "OK"
+        result_data["statusMessage"] = "OK"
         if type(req_fs) is UFTPFS:
             protocol = "UFTP"
         else:
             protocol = str(type(req_fs))
-        result_data = { "status": "OK",
-                       "drive": req_drive,
-                       "sharing_support": sharing_support,
-                       "protocol": protocol }
+            result_data["status"] = "ERROR"
+            result_data["statusMessage"] = "Sharing not supported for '"+protocol+"'"
+        if sharing_support:
+            share_client = _get_uftp_authserver(req_fs).get_sharing_endpoint()
+            shares = share_client.properties["shares"]
+            result_data["shares"] = shares
+        else:
+            result_data["status"] = "ERROR"
+            result_data["statusMessage"] = "Sharing not supported for this drive"
+            result_data["shares"] = []
         self.finish(json.dumps(result_data))
 
     @tornado.web.authenticated

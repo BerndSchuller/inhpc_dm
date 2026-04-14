@@ -743,6 +743,11 @@ export namespace TreeFinderSidebar {
         const data = await requestAPI<any>('inhpc_dm/share'+"?drive="+treefinder.rootPath,
           { 'body': req_data, 'method': 'POST' });
         console.log('share reply: ' + JSON.stringify(data));
+        showDialog({
+          title:"Share successful!",
+          body: "Shared to: "+data.share.http,
+          buttons: [ Dialog.okButton() ] 
+        });
       } catch (reason) {
             console.error(`Error on POST /inhpc_dm/share: ${reason}`);
             showErrorMessage("Error", `${reason}`);

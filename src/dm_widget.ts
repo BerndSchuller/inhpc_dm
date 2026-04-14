@@ -29,8 +29,8 @@ import {
  } from '@jupyterlab/ui-components';
 
 import {
-  dm_TransferList
-} from './dm_transferlist';
+  dm_TransfersTable
+} from './dm_tables';
 
 import { 
   dm_CopyButton,
@@ -57,12 +57,11 @@ export class dmWidget extends Widget {
     // === FileBrowsers left + right + tranferList in the middle ===
     this.leftFB = new dm_FileTreePanel(app, settings);
     this.rightFB = new dm_FileTreePanel(app, settings);
-    this._transferListWidget = new dm_TransferList();
+    this._transferListWidget = new dm_TransfersTable();
 
 	  // === Headlines ===
     const sourceHeader = this._createHeader('Filesystem 1');
     const targetHeader = this._createHeader('Filesystem 2');
-
 
     // ============= Left file tree ======================================
     const tb_selectEndpointButton_l = new dm_SelectEndpointButton(this.leftFB);
@@ -196,7 +195,7 @@ export class dmWidget extends Widget {
 
   private leftFB: dm_FileTreePanel;
   private rightFB: dm_FileTreePanel;
-  private _transferListWidget: dm_TransferList;
+  private _transferListWidget: dm_TransfersTable;
 
 }// end class dmWidget
 

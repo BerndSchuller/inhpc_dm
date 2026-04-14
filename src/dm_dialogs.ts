@@ -7,7 +7,6 @@ import {
   Widget
 } from '@lumino/widgets';
 
-
 const INPUT_DIALOG_CLASS = 'jp-Input-Dialog';
 
 /**
