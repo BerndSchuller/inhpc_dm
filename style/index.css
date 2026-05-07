@@ -119,6 +119,31 @@
   background-color: var(--jp-layout-color2);
 }
 
+
+/* === Custom Dialogs === */
+.dm-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 320px;
+  padding: 8px 4px;
+}
+
+.dm-dialog-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--jp-border-color2);
+  padding-bottom: 6px;
+}
+
+.dm-dialog-label {
+  font-weight: 600;
+}
+
+.dm-dialog-value {
+  font-family: monospace;
+}
+
 @import url('~tree-finder/dist/tree-finder.css');
 @import url('~tree-finder/dist/theme/material.css');
 

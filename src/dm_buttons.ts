@@ -182,10 +182,17 @@ export class dm_ShowEndpointInfoButton extends ToolbarButton {
       		const data = await requestAPI<any>('inhpc_dm/info'
 				+"?drive="+fb.drive, { 'method': 'GET' });
 			 console.log('info reply: ' + JSON.stringify(data));
-			 showDialog({
+			 showCustomDialog(
+				"Drive information",
+				[{label: "Status", value: data.status},
+					{label: "Protocol", value: data.protocol}
+				],
+				Dialog.okButton()
+			 );
+			/* showDialog({
 				title: "Drive information",
-				body: "Status: "+data.status+" protocol: "+data.protocol,
-				buttons: [Dialog.okButton()]})
+				body: "Status: "+data.status+" \n protocol: "+data.protocol,
+				buttons: [Dialog.okButton()]})*/
 		} catch (reason) {
       	    console.error(`Error on GET /inhpc_dm/info: ${reason}`);
       	    showErrorMessage("Error", `${reason}`);
@@ -232,3 +239,40 @@ export class dm_ShowSharesButton extends ToolbarButton {
     	}	
 	}
 }
+export async function showCustomDialog(
+  title: string,
+  fields: { label: string; value: string }[],
+  button: Readonly<Dialog.IButton>
+): Promise<void> {
+  const body = new Widget();
+
+  body.node.innerHTML = `
+    <div class="dm-dialog-body">
+      ${fields
+        .map(
+          field => `
+            <div class="dm-dialog-row">
+              <span class="dm-dialog-label">${escapeHTML(field.label)}</span>
+              <span class="dm-dialog-value">${escapeHTML(field.value)}</span>
+            </div>
+          `
+        )
+        .join('')}
+    </div>
+  `;
+
+  await showDialog({
+    title,
+    body,
+    buttons: [button]//[Dialog.okButton()]
+  });
+}
+function escapeHTML(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
