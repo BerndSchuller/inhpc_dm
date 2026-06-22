@@ -25,7 +25,6 @@ export async function initResources(resources: IFSResource[], options: IFSOption
       _addServerside: true,
     },
   });
-
   if (askRequired(resources)) {
     // ask for url template values, if required
     const dialogElem = document.createElement("div");

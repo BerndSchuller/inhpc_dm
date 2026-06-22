@@ -20,7 +20,7 @@ import {
 
 import { requestAPI } from './dm_handler';
 
-import { selectEndpoint } from './dm_dialogs';
+import { EndpointInfo, selectEndpoint } from './dm_dialogs';
 
 import { dm_SharesTable, dm_TransfersTable } from './dm_tables';
 
@@ -48,13 +48,12 @@ export class dm_SelectEndpointButton extends ToolbarButton {
 			const data: Array<Object> = await requestAPI<any>('inhpc_dm/resources', {
 				'method': 'GET'});
 			console.log(data);
-			const names: Array<string> = [];
-			const tooltips: Array<string> = [];
+			let endpoints: Array<EndpointInfo> = [];
 			data.forEach( (v: any) => {
-				names.push(v['name']);
-				tooltips.push(v['url']);
+				let ep: EndpointInfo = {endpoint: v['name'], tooltip: v['url'], available: JSON.parse(v['init']) };
+				endpoints.push(ep)
 			});
-			const selection = await selectEndpoint(names, tooltips);
+			const selection = await selectEndpoint(endpoints);
 			const name = selection.value;
 			if (name==null)
 				return;

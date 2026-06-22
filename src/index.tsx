@@ -37,7 +37,7 @@ const extension: JupyterFrontEndPlugin<void> = {
       const options: IFSOptions = settings?.composite.options as any ?? {};
       try {
         resources = (await initResources(resources, options)).filter(r => r.init);
-        } catch (e) {
+      } catch (e) {
         console.error("Failed to update resources!", e);
       }
       createDynamicCommands(app, TreeFinderSidebar.tracker, TreeFinderSidebar.clipboard, resources, settings);

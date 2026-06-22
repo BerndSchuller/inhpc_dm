@@ -108,7 +108,7 @@ class MetaManagerShared:
                             **self._pyfs_kw,
                         )
                         init = True
-                    except (FSError, OpenerError, ParseError) as e:
+                    except (FSError, OpenerError, ParseError, Exception) as e:
                         self.log.exception(
                             "Failed to create manager for resource %r",
                             resource.get("name"),

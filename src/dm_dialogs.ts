@@ -9,29 +9,37 @@ import {
 
 const INPUT_DIALOG_CLASS = 'jp-Input-Dialog';
 
+
+export type EndpointInfo = {
+  endpoint: string;
+  tooltip: string;
+  available: boolean;
+};
+
 /**
  * A popup dialog for selecting a jupyterfs endpoint to show
  * in one of the file trees
  */
 class SelectDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
 
-  constructor(endpointNames: string[] = [], tooltips: string[] = []) {
+  constructor(endpoints: EndpointInfo[] = []) {
     super();
     this.addClass(INPUT_DIALOG_CLASS);
     this._list = Array<HTMLInputElement>();
     this._input_endpoint = document.createElement('div');
     this._input_endpoint.classList.add('jp-mod-styled');
     this._input_endpoint.id = 'jp-dialog-input-id_ep';
-    
-    let i=0;
-    endpointNames.forEach((item) => {
+    let have_checked = false;
+    let i = 0;
+    endpoints.forEach((item) => {
       const container = document.createElement('div');
       const option = document.createElement('input');
       option.type = 'checkbox';
       option.name = 'inhpc_dm_endpoint_selection';
-      option.value = item;
+      option.value = item.endpoint;
       option.id = 'inhpc_dm_endpoint_selection'+i;
-      option.title = tooltips[i];
+      option.title = item.tooltip;
+      option.disabled = !item.available
       option.onclick = (e: Event)=> {
         var cb = e.target as HTMLInputElement;
         if(cb.checked){
@@ -42,17 +50,20 @@ class SelectDialog<T> extends Widget implements Dialog.IBodyWidget<T> {
         }
         cb.checked = true;
       };
-      if (i==0) option.checked = true;
+      if (!have_checked && item.available) {
+        option.checked = true;
+        have_checked = true;
+      }
       const label = document.createElement('label');
-      label.textContent = item;
+      label.textContent = item.endpoint + (item.available? "" : " (currently not available)")
       label.htmlFor = option.id;
-      label.title = tooltips[i];
+      label.title = item.tooltip;
       container.appendChild(option);
       container.appendChild(label);
       this._list.push(option)
       this._input_endpoint.appendChild(container);
       i++;
-  });
+    });
 
     const labelElement_ep = document.createElement('label');
     labelElement_ep.textContent = "Select Endpoint";
@@ -79,9 +90,9 @@ export function showDialog<T>(
   return dialog.launch();
 }
 
-export function selectEndpoint(availableEndpoints: string[], tooltips: string[]): Promise<Dialog.IResult<string>> {
+export function selectEndpoint(availableEndpoints: EndpointInfo[]): Promise<Dialog.IResult<string>> {
   return showDialog({
-    body: new SelectDialog(availableEndpoints, tooltips),
+    body: new SelectDialog(availableEndpoints),
     buttons: [
       Dialog.cancelButton({ label: 'Cancel' }),
       Dialog.okButton({ label: 'OK' })
