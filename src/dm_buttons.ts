@@ -124,6 +124,8 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
 			showErrorMessage("Error", "Please select a target directory");
 			return
 		}
+//TODO
+		//es muss gecheckt werden, ob es den dateinamen im zieldir schon gibt und dann muss eine zahl angehangen werden! sonst wird die datei ueberschrieben!
 		var req_data = JSON.stringify({
 						"command": _action,
 		                "parameters": { 
@@ -136,10 +138,15 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
       	    	'body': req_data,
       	    	'method': 'POST'});
       	  	console.log(data);
+//TODO
+			//hier muss eine abfrage rein, wenn ein ordner kopiert werden soll, wird angezeigt dass alles super ist, obwohl es nicht geklappt hat
 		  	var _title = data.status ?? "OK";
 		  	var _msg = data.error_info ?? "Task launched successfully";
 		  	showDialog({ title: _title, body: _msg, buttons: [ Dialog.okButton() ] });
-			monitor.refreshData();
+			
+			monitor.refreshData();//refresh transfer-log
+			target.refreshData(); //refresh target filebrowser
+			
       	} catch (reason) {
       	    console.error(`Error on POST /inhpc_dm/tasks: ${reason}`);
       	    showErrorMessage("Error", `${reason}`);

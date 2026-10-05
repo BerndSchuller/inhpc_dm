@@ -50,9 +50,7 @@ export class dm_FileTreePanel extends Widget {
     const refresh_button = new ToolbarButton({
       icon: refreshIcon,
       onClick: () => {
-        TreeFinderSidebar.tracker.setCurrent(this.treefinder);
-        void app.commands.execute(commandIDs.refresh);
-        TreeFinderSidebar.tracker.setCurrent(null);
+        this.refreshData();
     },
        tooltip: "Refresh",
        enabled: false
@@ -97,6 +95,13 @@ export class dm_FileTreePanel extends Widget {
     this.treefinder.refresh();
     this.treefinder.draw();
    }
+  }
+
+  refreshData()
+  {
+    TreeFinderSidebar.tracker.setCurrent(this.treefinder);
+    void this.app.commands.execute(commandIDs.refresh);
+    TreeFinderSidebar.tracker.setCurrent(null);
   }
 
   protected onResize(msg: any): void {

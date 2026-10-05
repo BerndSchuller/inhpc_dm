@@ -39,12 +39,14 @@ export class dm_TransfersTable extends DataGrid {
    };
 
   async refreshData() {
+    console.log("called refresh on data");
     try {
       const task_info = await requestAPI<any>('inhpc_dm/tasks', {
          'method': 'GET'});
       console.log(task_info['tasks']);
       let transferListModel = new JSONModel({data: task_info['tasks'], schema: transfersTableSchema});
       this.dataModel = transferListModel;
+
     }
     catch (reason) {
       console.error(`Error refreshing tasks list
