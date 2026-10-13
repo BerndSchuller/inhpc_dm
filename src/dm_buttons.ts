@@ -124,6 +124,26 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
 			showErrorMessage("Error", "Please select a target directory");
 			return
 		}
+
+		console.log("anz files: " + target.treefinder.model.contents.length); //gibt korrekt die anzahl der files im directory (allerdings im offenen - nicht zwingend im selected dir...)
+		//if(target.treefinder.model.contents.values)
+
+		console.log("cp: "+ _sources); // 04b6dcbd/untitled1.py
+// in node.name stehen alle dateien im root directory. die jetzt auf dopplung pruefen! und dann schauen wie man das fuer das selected dir hin bekommt
+(await target.treefinder.model.root.getChildren()).forEach( node => {
+
+	for(var index in _sources)
+	{
+		var filename = _sources[index].split("/"); //TODO check if its always / and never \ ....
+		if(filename[1] === node.name) //[0] is the filesystem path
+		{
+			// this filename is already in the target directory
+
+		}
+	}
+	console.log("Dateien: " + node.name);
+});
+
 //TODO
 		//es muss gecheckt werden, ob es den dateinamen im zieldir schon gibt und dann muss eine zahl angehangen werden! sonst wird die datei ueberschrieben!
 		var req_data = JSON.stringify({
@@ -146,7 +166,7 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
 			
 			monitor.refreshData();//refresh transfer-log
 			target.refreshData(); //refresh target filebrowser
-			
+
       	} catch (reason) {
       	    console.error(`Error on POST /inhpc_dm/tasks: ${reason}`);
       	    showErrorMessage("Error", `${reason}`);
