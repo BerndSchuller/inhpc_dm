@@ -124,26 +124,54 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
 			showErrorMessage("Error", "Please select a target directory");
 			return
 		}
+		
 
 		console.log("anz files: " + target.treefinder.model.contents.length); //gibt korrekt die anzahl der files im directory (allerdings im offenen - nicht zwingend im selected dir...)
 		//if(target.treefinder.model.contents.values)
 
 		console.log("cp: "+ _sources); // 04b6dcbd/untitled1.py
-// in node.name stehen alle dateien im root directory. die jetzt auf dopplung pruefen! und dann schauen wie man das fuer das selected dir hin bekommt
-(await target.treefinder.model.root.getChildren()).forEach( node => {
-
-	for(var index in _sources)
-	{
-		var filename = _sources[index].split("/"); //TODO check if its always / and never \ ....
-		if(filename[1] === node.name) //[0] is the filesystem path
+		// in node.name stehen alle dateien im root directory. die jetzt auf dopplung pruefen! und dann schauen wie man das fuer das selected dir hin bekommt
+		const allChildren = await target.treefinder.model.root.getChildren();
+		const allFilesInTarget = new Set(allChildren.map(node => node.name));
+		let copyFileName = "";
+		for(var anyName of allFilesInTarget)	
 		{
-			// this filename is already in the target directory
+			fileloop:
+			for(let index in _sources) // all selected file - normally one
+			{
+				
+				var fileWithPath = _sources[index].split("/"); //TODO check if its always / and never \ ....
+				console.log("Searching for: " + fileWithPath[fileWithPath.length-1]);
+				const checkingName = fileWithPath[fileWithPath.length-1];
+				if(checkingName === anyName) //[0] is the filesystem path
+				{
+					// this filename is already in the target directory
 
+					//is there a suffix?
+					const lastDot = checkingName.lastIndexOf(".");
+					const hasExtension = lastDot > 0;
+
+					const baseName = hasExtension ? checkingName.substring(0, lastDot): checkingName; // filename without path, without suffix
+
+					const extension = hasExtension ? checkingName.substring(lastDot) : ""; // the suffix
+
+					copyFileName = checkingName;
+					let counter = 1;
+
+					//adapt the name so its not taken anymore
+					while (allFilesInTarget.has(copyFileName)) {
+						copyFileName = `${baseName}(${counter})${extension}`;
+						counter++;
+					}
+					console.log("Found im outta here: " + copyFileName);
+					break fileloop;
+				}
+			} // if we are getting here: in copyFileName is the correct filename (without path)
+			console.log("Dateien: " + anyName);
 		}
-	}
-	console.log("Dateien: " + node.name);
-});
 
+		//_target_dir += copyFileName;
+		//console.log("Kopierbefehl send it: " + _target_dir);
 //TODO
 		//es muss gecheckt werden, ob es den dateinamen im zieldir schon gibt und dann muss eine zahl angehangen werden! sonst wird die datei ueberschrieben!
 		var req_data = JSON.stringify({
@@ -160,6 +188,8 @@ export class dm_CopyButton extends Widget{//ToolbarButton {
       	  	console.log(data);
 //TODO
 			//hier muss eine abfrage rein, wenn ein ordner kopiert werden soll, wird angezeigt dass alles super ist, obwohl es nicht geklappt hat
+			//diese abfrage macht keinen sinn. die gibt auch ok aus, wenn ein fehler aufgetreten ist! Error: ResourceNotFound: resource 'untitled1(1).py/untitled1.py' not found
+			// fuehrt ebenfalls zu einem ok button
 		  	var _title = data.status ?? "OK";
 		  	var _msg = data.error_info ?? "Task launched successfully";
 		  	showDialog({ title: _title, body: _msg, buttons: [ Dialog.okButton() ] });
