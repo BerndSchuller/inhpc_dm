@@ -6,7 +6,7 @@ WORK IN PROGRESS!
 
 ## Requirements
 
-* JupyterLab >= 4.0
+* JupyterLab >= 4.5
 
 ## Overview
 

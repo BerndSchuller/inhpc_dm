@@ -76,7 +76,8 @@ setup_args = dict(
         "fs>=2.4.11",
         "fs-s3fs>=1.1.1",
         "fs.smbfs>=0.6.3",
-        "jupyterlab>=4.2",
+        "pkg-resources-backport",
+        "jupyterlab>=4.5",
         "fusepy~=3.0.1",
         "pyunicore[crypto]>=1.3.7",
         "bcrypt>=4.0.0"
